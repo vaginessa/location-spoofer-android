@@ -20,7 +20,7 @@
             android:layout_height="wrap_content"
             android:ems="10"
             android:hint="@string/latitude"
-            android:inputType="numberDecimal" />
+            android:inputType="numberDecimal|numberSigned" />
     </android.support.design.widget.TextInputLayout>
 
     <android.support.design.widget.TextInputLayout
@@ -33,7 +33,7 @@
             android:layout_height="wrap_content"
             android:ems="10"
             android:hint="@string/longitude"
-            android:inputType="numberDecimal" />
+            android:inputType="numberDecimal|numberSigned" />
     </android.support.design.widget.TextInputLayout>
 
     <Button
