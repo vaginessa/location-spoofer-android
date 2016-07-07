@@ -39,18 +39,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mLocationManager.setTestProviderEnabled(LocationManager.GPS_PROVIDER, true);
     }
 
-    private void mockLocation(double latitude, double longitude) {
-        Location mockLocation = new Location(LocationManager.GPS_PROVIDER); // a string
-        mockLocation.setLatitude(latitude);  // double
+    private void mockLocation(double latitude, double longitude, float accuracy) {
+        Location mockLocation = new Location(LocationManager.GPS_PROVIDER);
+        mockLocation.setLatitude(latitude);
         mockLocation.setLongitude(longitude);
+        mockLocation.setAccuracy(accuracy);
         mockLocation.setTime(System.currentTimeMillis());
-        mockLocation.setTime(System.currentTimeMillis());
-        mockLocation.setAccuracy(1f);
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN) {
             mockLocation.setElapsedRealtimeNanos(SystemClock.elapsedRealtimeNanos());
-        } else {
         }
-
         mLocationManager.setTestProviderLocation(LocationManager.GPS_PROVIDER, mockLocation);
     }
 
@@ -62,11 +59,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         EditText latitudeEt = (EditText) findViewById(R.id.latitude);
         EditText longitudeEt = (EditText) findViewById(R.id.longitude);
+        EditText accuracyEt = (EditText) findViewById(R.id.accuracy);
         String message;
         if (validateEditText(latitudeEt) | validateEditText(longitudeEt)) {
             double latitude = Double.valueOf(latitudeEt.getText().toString());
             double longitude = Double.valueOf(longitudeEt.getText().toString());
-            mockLocation(latitude, longitude);
+            float accuracy = Float.valueOf(accuracyEt.getText().toString());
+            mockLocation(latitude, longitude, accuracy);
             message = "The location has been changed to (" + latitude + "," + longitude + ")";
         } else {
             message = "Spoofing the location has failed.";
