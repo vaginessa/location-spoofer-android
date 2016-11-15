@@ -4,5 +4,8 @@
     <string name="longitude">Longitude:</string>
     <string name="accuracy">Accuracy:</string>
     <string name="validation_required">Required!</string>
+
+    <!--activity_maps.xml-->
     <string name="title_activity_maps">Location Spoofer</string>
+    <string name="dialog_mock_location">Set your location here?</string>
 </resources>
