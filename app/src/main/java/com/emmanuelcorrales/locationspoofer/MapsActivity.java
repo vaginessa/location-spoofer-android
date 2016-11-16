@@ -21,6 +21,7 @@ import com.google.android.gms.maps.model.LatLng;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMapLongClickListener {
     private static final int REQUEST_PERMISSION_LOCATION = 7676;
+    private static final int DEFAULT_ACCURACY = 5;
 
     private GoogleMap mMap;
     private LocationManager mLocationManager;
@@ -99,7 +100,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void mockLocation(double latitude, double longitude) {
-        mockLocation(latitude, longitude, 50);
+        mockLocation(latitude, longitude, DEFAULT_ACCURACY);
     }
 
     private void mockLocation(double latitude, double longitude, float accuracy) {
