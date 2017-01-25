@@ -1,18 +1,33 @@
 package com.emmanuelcorrales.locationspoofer;
 
+import android.Manifest;
+import android.content.DialogInterface;
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
-import android.os.SystemClock;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.Toast;
+import android.os.SystemClock;
+import android.support.design.widget.TabLayout;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
+import android.support.v4.view.ViewPager;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
 
+public class MainActivity extends AppCompatActivity implements OnMapReadyCallback,
+        GoogleMap.OnMapLongClickListener {
+
+    private static final int REQUEST_PERMISSION_LOCATION = 7676;
+    private static final int DEFAULT_ACCURACY = 5;
+
+    private SupportMapFragment mMapFragment = new SupportMapFragment();
     private LocationManager mLocationManager;
 
     @Override
@@ -20,8 +35,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Button mockLocationBtn = (Button) findViewById(R.id.mock_location);
-        mockLocationBtn.setOnClickListener(this);
+        mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        ViewPager viewPager = (ViewPager) findViewById(R.id.viewpager);
+        Fragment[] fragments = {mMapFragment, FormFragment.newInstance(mLocationManager)};
+        viewPager.setAdapter(new ViewPagerAdapter(getSupportFragmentManager(), fragments));
+
+        TabLayout tabs = (TabLayout) findViewById(R.id.tabs);
+        tabs.setupWithViewPager(viewPager);
+
+        mMapFragment.getMapAsync(this);
 
         mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         mLocationManager.addTestProvider(
@@ -39,6 +65,39 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mLocationManager.setTestProviderEnabled(LocationManager.GPS_PROVIDER, true);
     }
 
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        googleMap.setOnMapLongClickListener(this);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                    == PackageManager.PERMISSION_GRANTED) {
+                googleMap.setMyLocationEnabled(true);
+            } else {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                        REQUEST_PERMISSION_LOCATION);
+            }
+        } else {
+            googleMap.setMyLocationEnabled(true);
+        }
+    }
+
+    @Override
+    public void onMapLongClick(final LatLng latLng) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.dialog_mock_location)
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mockLocation(latLng.latitude, latLng.longitude);
+                    }
+                }).setNegativeButton(android.R.string.no, null).show();
+    }
+
+    private void mockLocation(double latitude, double longitude) {
+        mockLocation(latitude, longitude, DEFAULT_ACCURACY);
+    }
+
     private void mockLocation(double latitude, double longitude, float accuracy) {
         Location mockLocation = new Location(LocationManager.GPS_PROVIDER);
         mockLocation.setLatitude(latitude);
@@ -49,39 +108,5 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             mockLocation.setElapsedRealtimeNanos(SystemClock.elapsedRealtimeNanos());
         }
         mLocationManager.setTestProviderLocation(LocationManager.GPS_PROVIDER, mockLocation);
-    }
-
-    private LocationManager getLocationManager() {
-        return (LocationManager) getSystemService(LOCATION_SERVICE);
-    }
-
-    @Override
-    public void onClick(View v) {
-        EditText latitudeEt = (EditText) findViewById(R.id.latitude);
-        EditText longitudeEt = (EditText) findViewById(R.id.longitude);
-        EditText accuracyEt = (EditText) findViewById(R.id.accuracy);
-        String message;
-        if (validateEditText(latitudeEt) | validateEditText(longitudeEt)) {
-            double latitude = Double.valueOf(latitudeEt.getText().toString());
-            double longitude = Double.valueOf(longitudeEt.getText().toString());
-            float accuracy = Float.valueOf(accuracyEt.getText().toString());
-            mockLocation(latitude, longitude, accuracy);
-            message = "The location has been changed to (" + latitude + "," + longitude + ")";
-        } else {
-            message = "Spoofing the location has failed.";
-        }
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
-    }
-
-    private boolean validateEditText(EditText editText) {
-        if (editText == null) {
-            throw new IllegalArgumentException("Argument 'editText' cannot be null.");
-        }
-
-        if (editText.getText().toString().isEmpty()) {
-            editText.setError(getString(R.string.validation_required));
-            return false;
-        }
-        return true;
     }
 }
