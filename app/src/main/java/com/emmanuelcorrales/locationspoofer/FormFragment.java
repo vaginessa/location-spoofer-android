@@ -17,9 +17,11 @@ import android.widget.Toast;
 
 public class FormFragment extends Fragment implements View.OnClickListener {
 
+    public static final String TAG = FormFragment.class.getSimpleName();
+
     public static FormFragment newInstance(LocationManager locationManager) {
         FormFragment fragment = new FormFragment();
-        fragment.mLocationManager = locationManager;
+        fragment.setLocationManager(locationManager);
         return fragment;
     }
 
@@ -53,6 +55,10 @@ public class FormFragment extends Fragment implements View.OnClickListener {
             message = "Spoofing the location has failed.";
         }
         Toast.makeText(v.getContext(), message, Toast.LENGTH_SHORT).show();
+    }
+
+    public void setLocationManager(LocationManager locationManager) {
+        mLocationManager = locationManager;
     }
 
     private boolean validateEditText(EditText editText) {

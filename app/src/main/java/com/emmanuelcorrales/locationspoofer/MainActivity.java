@@ -24,10 +24,10 @@ import com.google.android.gms.maps.model.LatLng;
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback,
         GoogleMap.OnMapLongClickListener {
 
+    private static final String TAG = MainActivity.class.getSimpleName();
     private static final int REQUEST_PERMISSION_LOCATION = 7676;
     private static final int DEFAULT_ACCURACY = 5;
 
-    private SupportMapFragment mMapFragment = new SupportMapFragment();
     private LocationManager mLocationManager;
 
     @Override
@@ -41,13 +41,16 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         setSupportActionBar(toolbar);
 
         ViewPager viewPager = (ViewPager) findViewById(R.id.viewpager);
-        Fragment[] fragments = {mMapFragment, FormFragment.newInstance(mLocationManager)};
+        SupportMapFragment mapFragment = getMapFragment();
+        FormFragment formFragment = getFormFragment();
+        Fragment[] fragments = {mapFragment, formFragment};
         viewPager.setAdapter(new ViewPagerAdapter(getSupportFragmentManager(), fragments));
+
 
         TabLayout tabs = (TabLayout) findViewById(R.id.tabs);
         tabs.setupWithViewPager(viewPager);
 
-        mMapFragment.getMapAsync(this);
+        mapFragment.getMapAsync(this);
 
         mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         mLocationManager.addTestProvider(
@@ -92,6 +95,28 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         mockLocation(latLng.latitude, latLng.longitude);
                     }
                 }).setNegativeButton(android.R.string.no, null).show();
+    }
+
+    private SupportMapFragment getMapFragment() {
+        SupportMapFragment mapFragment = (SupportMapFragment)
+                ViewPagerUtils.getViewPagerFragment(R.id.viewpager, getSupportFragmentManager(), 0);
+
+        if (mapFragment == null) {
+            mapFragment = new SupportMapFragment();
+        }
+        return mapFragment;
+    }
+
+    private FormFragment getFormFragment() {
+        FormFragment formFragment = (FormFragment)
+                ViewPagerUtils.getViewPagerFragment(R.id.viewpager, getSupportFragmentManager(), 1);
+
+        if (formFragment == null) {
+            formFragment = FormFragment.newInstance(mLocationManager);
+        } else {
+            formFragment.setLocationManager(mLocationManager);
+        }
+        return formFragment;
     }
 
     private void mockLocation(double latitude, double longitude) {
