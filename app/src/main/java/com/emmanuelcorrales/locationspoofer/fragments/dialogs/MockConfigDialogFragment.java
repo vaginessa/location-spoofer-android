@@ -1,4 +1,4 @@
-package com.emmanuelcorrales.locationspoofer;
+package com.emmanuelcorrales.locationspoofer.fragments.dialogs;
 
 import android.app.Dialog;
 import android.content.DialogInterface;
@@ -7,6 +7,8 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
+
+import com.emmanuelcorrales.locationspoofer.R;
 
 public class MockConfigDialogFragment extends DialogFragment
         implements DialogInterface.OnClickListener {

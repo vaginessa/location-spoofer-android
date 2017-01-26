@@ -17,6 +17,8 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
+import com.emmanuelcorrales.locationspoofer.fragments.FormFragment;
+import com.emmanuelcorrales.locationspoofer.fragments.dialogs.MockConfigDialogFragment;
 import com.emmanuelcorrales.locationspoofer.utils.MockLocationUtils;
 import com.emmanuelcorrales.locationspoofer.utils.ViewPagerUtils;
 import com.google.android.gms.maps.GoogleMap;
