@@ -29,8 +29,4 @@ public class MockConfigDialogFragment extends DialogFragment
     public void onClick(DialogInterface dialog, int which) {
         startActivityForResult(new Intent(android.provider.Settings.ACTION_SETTINGS), 0);
     }
-
-    public boolean isShowing() {
-        return getFragmentManager().findFragmentByTag(TAG) == null;
-    }
 }
