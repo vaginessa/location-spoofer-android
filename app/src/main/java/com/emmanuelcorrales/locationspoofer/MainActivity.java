@@ -10,12 +10,14 @@ import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
+import com.emmanuelcorrales.locationspoofer.utils.MockLocationUtils;
 import com.emmanuelcorrales.locationspoofer.utils.ViewPagerUtils;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -30,13 +32,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private static final int DEFAULT_ACCURACY = 5;
 
     private LocationManager mLocationManager;
+    private DialogFragment mMockConfigDialog = new MockConfigDialogFragment();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        setupLocationManager();
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -47,26 +50,27 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         Fragment[] fragments = {mapFragment, formFragment};
         viewPager.setAdapter(new ViewPagerAdapter(getSupportFragmentManager(), fragments));
 
-
         TabLayout tabs = (TabLayout) findViewById(R.id.tabs);
         tabs.setupWithViewPager(viewPager);
 
         mapFragment.getMapAsync(this);
+    }
 
-        mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-        mLocationManager.addTestProvider(
-                LocationManager.GPS_PROVIDER,
-                false,
-                false,
-                false,
-                false,
-                true,
-                true,
-                true,
-                0,
-                5
-        );
-        mLocationManager.setTestProviderEnabled(LocationManager.GPS_PROVIDER, true);
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (!MockLocationUtils.isMockLocationEnabled(this)) {
+            mMockConfigDialog.show(getSupportFragmentManager(),
+                    MockConfigDialogFragment.TAG);
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        if (mMockConfigDialog.isAdded()) {
+            mMockConfigDialog.dismiss();
+        }
+        super.onPause();
     }
 
     @Override
@@ -96,6 +100,25 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         mockLocation(latLng.latitude, latLng.longitude);
                     }
                 }).setNegativeButton(android.R.string.no, null).show();
+    }
+
+    private void setupLocationManager() {
+        mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        if (MockLocationUtils.isMockLocationEnabled(this)) {
+            mLocationManager.addTestProvider(
+                    LocationManager.GPS_PROVIDER,           //name
+                    false,                                  //requiresNetwork
+                    false,                                  //requiresSatellite
+                    false,                                  //requiresCell
+                    false,                                  //hasMonetaryCost
+                    true,                                   //supportsAltitude
+                    true,                                   //supportsSpeed
+                    true,                                   //supportsBearing
+                    0,                                      //powerRequirement
+                    5                                       //accuracy
+            );
+            mLocationManager.setTestProviderEnabled(LocationManager.GPS_PROVIDER, true);
+        }
     }
 
     private SupportMapFragment getMapFragment() {
