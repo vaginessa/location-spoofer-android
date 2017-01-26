@@ -1,4 +1,4 @@
-package com.emmanuelcorrales.locationspoofer;
+package com.emmanuelcorrales.locationspoofer.utils;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
