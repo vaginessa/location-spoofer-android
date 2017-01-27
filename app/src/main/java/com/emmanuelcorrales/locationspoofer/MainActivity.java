@@ -18,7 +18,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
 import com.emmanuelcorrales.locationspoofer.fragments.FormFragment;
+import com.emmanuelcorrales.locationspoofer.fragments.dialogs.MapHintDialogFragment;
 import com.emmanuelcorrales.locationspoofer.fragments.dialogs.MockConfigDialogFragment;
+import com.emmanuelcorrales.locationspoofer.utils.ConfigUtils;
 import com.emmanuelcorrales.locationspoofer.utils.MockLocationUtils;
 import com.emmanuelcorrales.locationspoofer.utils.ViewPagerUtils;
 import com.google.android.gms.maps.GoogleMap;
@@ -35,6 +37,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private LocationManager mLocationManager;
     private DialogFragment mMockConfigDialog = new MockConfigDialogFragment();
+    private DialogFragment mMapHintDialog = new MapHintDialogFragment();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,8 +65,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void onResume() {
         super.onResume();
         if (!MockLocationUtils.isMockLocationEnabled(this)) {
-            mMockConfigDialog.show(getSupportFragmentManager(),
-                    MockConfigDialogFragment.TAG);
+            mMockConfigDialog.show(getSupportFragmentManager(), MockConfigDialogFragment.TAG);
+            return;
+        }
+
+        if (ConfigUtils.isMapHintVisible(this)) {
+            mMapHintDialog.show(getSupportFragmentManager(), MapHintDialogFragment.TAG);
         }
     }
 
@@ -72,6 +79,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (mMockConfigDialog.isAdded()) {
             mMockConfigDialog.dismiss();
         }
+
+        if (mMapHintDialog.isAdded()) {
+            mMapHintDialog.dismiss();
+        }
+
         super.onPause();
     }
 
