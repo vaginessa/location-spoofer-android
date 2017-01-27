@@ -7,15 +7,17 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import com.emmanuelcorrales.locationspoofer.R;
+import com.emmanuelcorrales.locationspoofer.utils.AndroidUtils;
 
 public class FormFragment extends Fragment implements View.OnClickListener {
 
@@ -43,6 +45,8 @@ public class FormFragment extends Fragment implements View.OnClickListener {
 
     @Override
     public void onClick(View v) {
+        AndroidUtils.hideKeyboard(getActivity(), getView());
+
         EditText latitudeEt = (EditText) getView().findViewById(R.id.latitude);
         EditText longitudeEt = (EditText) getView().findViewById(R.id.longitude);
         EditText accuracyEt = (EditText) getView().findViewById(R.id.accuracy);
@@ -56,7 +60,9 @@ public class FormFragment extends Fragment implements View.OnClickListener {
         } else {
             message = "Spoofing the location has failed.";
         }
-        Toast.makeText(v.getContext(), message, Toast.LENGTH_SHORT).show();
+
+        CoordinatorLayout cl = (CoordinatorLayout) getActivity().findViewById(R.id.coordinator_layout);
+        Snackbar.make(cl, message, Snackbar.LENGTH_SHORT).show();
     }
 
     public void setLocationManager(LocationManager locationManager) {
