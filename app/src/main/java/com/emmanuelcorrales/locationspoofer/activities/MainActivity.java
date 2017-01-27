@@ -16,13 +16,13 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 
 import com.emmanuelcorrales.locationspoofer.R;
 import com.emmanuelcorrales.locationspoofer.ViewPagerAdapter;
 import com.emmanuelcorrales.locationspoofer.fragments.FormFragment;
 import com.emmanuelcorrales.locationspoofer.fragments.dialogs.MapHintDialogFragment;
 import com.emmanuelcorrales.locationspoofer.fragments.dialogs.MockConfigDialogFragment;
+import com.emmanuelcorrales.locationspoofer.utils.AndroidUtils;
 import com.emmanuelcorrales.locationspoofer.utils.ConfigUtils;
 import com.emmanuelcorrales.locationspoofer.utils.MockLocationUtils;
 import com.emmanuelcorrales.locationspoofer.utils.ViewPagerUtils;
@@ -131,7 +131,9 @@ public class MainActivity extends AnalyticsActivity implements OnMapReadyCallbac
     @Override
     public void onPageSelected(int position) {
         if (position == INDEX_MAP) {
-            hideKeyboard();
+            View view = findViewById(android.R.id.content);
+            AndroidUtils.hideKeyboard(this, view);
+
             if (ConfigUtils.isMapHintVisible(this)) {
                 mMapHintDialog.show(getSupportFragmentManager(), MapHintDialogFragment.TAG);
             }
@@ -182,12 +184,6 @@ public class MainActivity extends AnalyticsActivity implements OnMapReadyCallbac
             formFragment.setLocationManager(mLocationManager);
         }
         return formFragment;
-    }
-
-    private void hideKeyboard() {
-        InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
-        View view = findViewById(android.R.id.content);
-        imm.hideSoftInputFromWindow(view.getWindowToken(), INDEX_MAP);
     }
 
     private void mockLocation(double latitude, double longitude) {
