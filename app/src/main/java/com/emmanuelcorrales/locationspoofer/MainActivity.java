@@ -16,6 +16,8 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 
 import com.emmanuelcorrales.locationspoofer.fragments.FormFragment;
 import com.emmanuelcorrales.locationspoofer.fragments.dialogs.MapHintDialogFragment;
@@ -29,11 +31,13 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback,
-        GoogleMap.OnMapLongClickListener {
+        GoogleMap.OnMapLongClickListener, ViewPager.OnPageChangeListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final int REQUEST_PERMISSION_LOCATION = 7676;
     private static final int DEFAULT_ACCURACY = 5;
+    private static final int INDEX_MAP = 0;
+    private static final int INDEX_FORM = 1;
 
     private LocationManager mLocationManager;
     private DialogFragment mMockConfigDialog = new MockConfigDialogFragment();
@@ -54,6 +58,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         FormFragment formFragment = getFormFragment();
         Fragment[] fragments = {mapFragment, formFragment};
         viewPager.setAdapter(new ViewPagerAdapter(getSupportFragmentManager(), fragments));
+        viewPager.addOnPageChangeListener(this);
 
         TabLayout tabs = (TabLayout) findViewById(R.id.tabs);
         tabs.setupWithViewPager(viewPager);
@@ -116,6 +121,23 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }).setNegativeButton(android.R.string.no, null).show();
     }
 
+    @Override
+    public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+    }
+
+    @Override
+    public void onPageSelected(int position) {
+        if (position == 0) {
+            hideKeyboard();
+        }
+    }
+
+    @Override
+    public void onPageScrollStateChanged(int state) {
+
+    }
+
     private void setupLocationManager() {
         mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         if (MockLocationUtils.isMockLocationEnabled(this)) {
@@ -155,6 +177,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             formFragment.setLocationManager(mLocationManager);
         }
         return formFragment;
+    }
+
+    private void hideKeyboard() {
+        InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+        View view = findViewById(android.R.id.content);
+        imm.hideSoftInputFromWindow(view.getWindowToken(), INDEX_MAP);
     }
 
     private void mockLocation(double latitude, double longitude) {
