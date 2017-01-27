@@ -1,4 +1,4 @@
-package com.emmanuelcorrales.locationspoofer;
+package com.emmanuelcorrales.locationspoofer.activities;
 
 import android.Manifest;
 import android.content.DialogInterface;
@@ -19,6 +19,8 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 
+import com.emmanuelcorrales.locationspoofer.R;
+import com.emmanuelcorrales.locationspoofer.ViewPagerAdapter;
 import com.emmanuelcorrales.locationspoofer.fragments.FormFragment;
 import com.emmanuelcorrales.locationspoofer.fragments.dialogs.MapHintDialogFragment;
 import com.emmanuelcorrales.locationspoofer.fragments.dialogs.MockConfigDialogFragment;
