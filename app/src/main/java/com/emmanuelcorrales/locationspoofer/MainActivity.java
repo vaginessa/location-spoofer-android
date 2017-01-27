@@ -74,7 +74,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             return;
         }
 
-        if (ConfigUtils.isMapHintVisible(this)) {
+        ViewPager viewPager = (ViewPager) findViewById(R.id.viewpager);
+        if (viewPager.getCurrentItem() == INDEX_MAP && ConfigUtils.isMapHintVisible(this)) {
             mMapHintDialog.show(getSupportFragmentManager(), MapHintDialogFragment.TAG);
         }
     }
@@ -128,8 +129,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onPageSelected(int position) {
-        if (position == 0) {
+        if (position == INDEX_MAP) {
             hideKeyboard();
+            if (ConfigUtils.isMapHintVisible(this)) {
+                mMapHintDialog.show(getSupportFragmentManager(), MapHintDialogFragment.TAG);
+            }
         }
     }
 
