@@ -8,6 +8,7 @@ import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
@@ -15,6 +16,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 
 import com.emmanuelcorrales.locationspoofer.R;
@@ -41,6 +43,7 @@ public class MainActivity extends AnalyticsActivity implements OnMapReadyCallbac
     private static final int INDEX_FORM = 1;
 
     private LocationManager mLocationManager;
+    private GoogleMap mMap;
     private DialogFragment mMockConfigDialog = new MockConfigDialogFragment();
     private DialogFragment mMapHintDialog = new MapHintDialogFragment();
 
@@ -95,21 +98,44 @@ public class MainActivity extends AnalyticsActivity implements OnMapReadyCallbac
     }
 
     @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == REQUEST_PERMISSION_LOCATION
+                && grantResults.length > 0
+                && grantResults[0] == PackageManager.PERMISSION_GRANTED
+                && mMap != null) {
+
+            Log.d(TAG, "Permission granted.");
+            try {
+                mMap.setMyLocationEnabled(true);
+            } catch (SecurityException e) {
+                Log.d(TAG, "Permission granted but failed to enable my location.");
+                e.printStackTrace();
+            }
+        } else {
+            Log.d(TAG, "Permission not granted.");
+        }
+    }
+
+    @Override
     public void onMapReady(GoogleMap googleMap) {
-        googleMap.setOnMapLongClickListener(this);
+        mMap = googleMap;
+        mMap.setOnMapLongClickListener(this);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                     == PackageManager.PERMISSION_GRANTED) {
-                googleMap.setMyLocationEnabled(true);
+                mMap.setMyLocationEnabled(true);
             } else {
                 ActivityCompat.requestPermissions(this,
                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                         REQUEST_PERMISSION_LOCATION);
             }
         } else {
-            googleMap.setMyLocationEnabled(true);
+            mMap.setMyLocationEnabled(true);
         }
     }
+
 
     @Override
     public void onMapLongClick(final LatLng latLng) {
