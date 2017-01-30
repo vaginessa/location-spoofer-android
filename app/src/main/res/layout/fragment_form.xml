@@ -46,7 +46,8 @@
             android:layout_height="wrap_content"
             android:ems="10"
             android:hint="@string/accuracy"
-            android:inputType="numberDecimal" />
+            android:inputType="numberDecimal"
+            android:text="5" />
     </android.support.design.widget.TextInputLayout>
 
     <Button
