@@ -51,7 +51,7 @@ public class FormFragment extends Fragment implements View.OnClickListener {
         EditText longitudeEt = (EditText) getView().findViewById(R.id.longitude);
         EditText accuracyEt = (EditText) getView().findViewById(R.id.accuracy);
         String message;
-        if (validateEditText(latitudeEt) | validateEditText(longitudeEt)) {
+        if (validateEditText(latitudeEt) & validateEditText(longitudeEt) & validateEditText(accuracyEt)) {
             double latitude = Double.valueOf(latitudeEt.getText().toString());
             double longitude = Double.valueOf(longitudeEt.getText().toString());
             float accuracy = Float.valueOf(accuracyEt.getText().toString());
