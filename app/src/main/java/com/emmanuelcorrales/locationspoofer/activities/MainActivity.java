@@ -52,7 +52,7 @@ public class MainActivity extends AnalyticsActivity implements OnMapReadyCallbac
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        setupLocationManager();
+        mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -76,6 +76,20 @@ public class MainActivity extends AnalyticsActivity implements OnMapReadyCallbac
         if (!MockLocationUtils.isMockLocationEnabled(this)) {
             mMockConfigDialog.show(getSupportFragmentManager(), MockConfigDialogFragment.TAG);
             return;
+        } else {
+            mLocationManager.addTestProvider(
+                    LocationManager.GPS_PROVIDER,           //name
+                    false,                                  //requiresNetwork
+                    false,                                  //requiresSatellite
+                    false,                                  //requiresCell
+                    false,                                  //hasMonetaryCost
+                    true,                                   //supportsAltitude
+                    true,                                   //supportsSpeed
+                    true,                                   //supportsBearing
+                    0,                                      //powerRequirement
+                    DEFAULT_ACCURACY                        //accuracy
+            );
+            mLocationManager.setTestProviderEnabled(LocationManager.GPS_PROVIDER, true);
         }
 
         ViewPager viewPager = (ViewPager) findViewById(R.id.viewpager);
@@ -169,25 +183,6 @@ public class MainActivity extends AnalyticsActivity implements OnMapReadyCallbac
     @Override
     public void onPageScrollStateChanged(int state) {
 
-    }
-
-    private void setupLocationManager() {
-        mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-        if (MockLocationUtils.isMockLocationEnabled(this)) {
-            mLocationManager.addTestProvider(
-                    LocationManager.GPS_PROVIDER,           //name
-                    false,                                  //requiresNetwork
-                    false,                                  //requiresSatellite
-                    false,                                  //requiresCell
-                    false,                                  //hasMonetaryCost
-                    true,                                   //supportsAltitude
-                    true,                                   //supportsSpeed
-                    true,                                   //supportsBearing
-                    0,                                      //powerRequirement
-                    5                                       //accuracy
-            );
-            mLocationManager.setTestProviderEnabled(LocationManager.GPS_PROVIDER, true);
-        }
     }
 
     private SupportMapFragment getMapFragment() {
