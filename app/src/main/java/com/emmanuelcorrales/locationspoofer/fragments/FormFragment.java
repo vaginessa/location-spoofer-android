@@ -18,6 +18,7 @@ import android.widget.EditText;
 
 import com.emmanuelcorrales.locationspoofer.R;
 import com.emmanuelcorrales.locationspoofer.utils.AndroidUtils;
+import com.emmanuelcorrales.locationspoofer.utils.EditTextUtils;
 
 public class FormFragment extends Fragment implements View.OnClickListener {
 
@@ -51,7 +52,10 @@ public class FormFragment extends Fragment implements View.OnClickListener {
         EditText longitudeEt = (EditText) getView().findViewById(R.id.longitude);
         EditText accuracyEt = (EditText) getView().findViewById(R.id.accuracy);
         String message;
-        if (validateEditText(latitudeEt) & validateEditText(longitudeEt) & validateEditText(accuracyEt)) {
+
+        if (EditTextUtils.validateEmpty(latitudeEt, R.string.validation_required)
+                & EditTextUtils.validateEmpty(longitudeEt, R.string.validation_required)
+                & EditTextUtils.validateEmpty(accuracyEt, R.string.validation_required)) {
             double latitude = Double.valueOf(latitudeEt.getText().toString());
             double longitude = Double.valueOf(longitudeEt.getText().toString());
             float accuracy = Float.valueOf(accuracyEt.getText().toString());
@@ -67,18 +71,6 @@ public class FormFragment extends Fragment implements View.OnClickListener {
 
     public void setLocationManager(LocationManager locationManager) {
         mLocationManager = locationManager;
-    }
-
-    private boolean validateEditText(EditText editText) {
-        if (editText == null) {
-            throw new IllegalArgumentException("Argument 'editText' cannot be null.");
-        }
-
-        if (editText.getText().toString().isEmpty()) {
-            editText.setError(getString(R.string.validation_required));
-            return false;
-        }
-        return true;
     }
 
     private void mockLocation(double latitude, double longitude, float accuracy) {
