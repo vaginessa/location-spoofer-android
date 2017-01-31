@@ -2,6 +2,8 @@ package com.emmanuelcorrales.locationspoofer.utils;
 
 import android.app.AppOpsManager;
 import android.content.Context;
+import android.location.Criteria;
+import android.location.LocationManager;
 import android.os.Build;
 import android.provider.Settings;
 import android.util.Log;
@@ -28,5 +30,15 @@ public class MockLocationUtils {
             Log.d(TAG, "Mock location is not enabled.");
         }
         return isEnabled;
+    }
+
+    public static String getBestProvider(LocationManager locationManager) {
+        Criteria criteria = new Criteria();
+        criteria.setAccuracy(Criteria.ACCURACY_FINE);
+        String provider = locationManager.getBestProvider(criteria, false);
+        if (provider == null) {
+            Log.e(TAG, "No location provider found!");
+        }
+        return provider;
     }
 }

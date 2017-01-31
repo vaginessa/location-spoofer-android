@@ -25,11 +25,11 @@ import com.emmanuelcorrales.locationspoofer.fragments.FormFragment;
 import com.emmanuelcorrales.locationspoofer.fragments.dialogs.LocationConfigDialogFragment;
 import com.emmanuelcorrales.locationspoofer.fragments.dialogs.MapHintDialogFragment;
 import com.emmanuelcorrales.locationspoofer.fragments.dialogs.MockConfigDialogFragment;
-import com.emmanuelcorrales.locationspoofer.utils.AndroidUtils;
+import com.emmanuelcorrales.android.utils.KeyboardUtils;
 import com.emmanuelcorrales.locationspoofer.utils.ConfigUtils;
-import com.emmanuelcorrales.locationspoofer.utils.LocationUtils;
+import com.emmanuelcorrales.android.utils.LocationUtils;
 import com.emmanuelcorrales.locationspoofer.utils.MockLocationUtils;
-import com.emmanuelcorrales.locationspoofer.utils.ViewPagerUtils;
+import com.emmanuelcorrales.android.utils.ViewPagerUtils;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -182,7 +182,7 @@ public class MainActivity extends AnalyticsActivity implements OnMapReadyCallbac
     public void onPageSelected(int position) {
         if (position == INDEX_MAP) {
             View view = findViewById(android.R.id.content);
-            AndroidUtils.hideKeyboard(this, view);
+            KeyboardUtils.hideKeyboard(this, view);
 
             if (ConfigUtils.isMapHintVisible(this)) {
                 mMapHintDialog.show(getSupportFragmentManager(), MapHintDialogFragment.TAG);

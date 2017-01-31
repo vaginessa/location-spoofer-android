@@ -17,8 +17,8 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.emmanuelcorrales.locationspoofer.R;
-import com.emmanuelcorrales.locationspoofer.utils.AndroidUtils;
-import com.emmanuelcorrales.locationspoofer.utils.EditTextUtils;
+import com.emmanuelcorrales.android.utils.KeyboardUtils;
+import com.emmanuelcorrales.android.utils.EditTextUtils;
 
 public class FormFragment extends Fragment implements View.OnClickListener {
 
@@ -46,7 +46,7 @@ public class FormFragment extends Fragment implements View.OnClickListener {
 
     @Override
     public void onClick(View v) {
-        AndroidUtils.hideKeyboard(getActivity(), getView());
+        KeyboardUtils.hideKeyboard(getActivity(), getView());
 
         EditText latitudeEt = (EditText) getView().findViewById(R.id.latitude);
         EditText longitudeEt = (EditText) getView().findViewById(R.id.longitude);
