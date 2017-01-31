@@ -27,6 +27,6 @@ public class MockConfigDialogFragment extends DialogFragment
 
     @Override
     public void onClick(DialogInterface dialog, int which) {
-        startActivityForResult(new Intent(android.provider.Settings.ACTION_SETTINGS), 0);
+        startActivityForResult(new Intent(android.provider.Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS), 0);
     }
 }
