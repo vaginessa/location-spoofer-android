@@ -1,11 +1,7 @@
 package com.emmanuelcorrales.locationspoofer.fragments;
 
 
-import android.location.Location;
-import android.location.LocationManager;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
@@ -16,21 +12,22 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 
-import com.emmanuelcorrales.locationspoofer.R;
-import com.emmanuelcorrales.android.utils.KeyboardUtils;
 import com.emmanuelcorrales.android.utils.EditTextUtils;
+import com.emmanuelcorrales.android.utils.KeyboardUtils;
+import com.emmanuelcorrales.locationspoofer.R;
+import com.emmanuelcorrales.locationspoofer.LocationSpoofer;
 
 public class FormFragment extends Fragment implements View.OnClickListener {
 
     public static final String TAG = FormFragment.class.getSimpleName();
 
-    public static FormFragment newInstance(LocationManager locationManager) {
+    public static FormFragment newInstance(LocationSpoofer spoofer) {
         FormFragment fragment = new FormFragment();
-        fragment.setLocationManager(locationManager);
+        fragment.setSpoofer(spoofer);
         return fragment;
     }
 
-    private LocationManager mLocationManager;
+    private LocationSpoofer mSpoofer;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -59,7 +56,7 @@ public class FormFragment extends Fragment implements View.OnClickListener {
             double latitude = Double.valueOf(latitudeEt.getText().toString());
             double longitude = Double.valueOf(longitudeEt.getText().toString());
             float accuracy = Float.valueOf(accuracyEt.getText().toString());
-            mockLocation(latitude, longitude, accuracy);
+            mSpoofer.mockLocation(latitude, longitude, accuracy);
             message = "The location has been changed to (" + latitude + "," + longitude + ")";
         } else {
             message = "Spoofing the location has failed.";
@@ -69,19 +66,10 @@ public class FormFragment extends Fragment implements View.OnClickListener {
         Snackbar.make(cl, message, Snackbar.LENGTH_SHORT).show();
     }
 
-    public void setLocationManager(LocationManager locationManager) {
-        mLocationManager = locationManager;
-    }
-
-    private void mockLocation(double latitude, double longitude, float accuracy) {
-        Location mockLocation = new Location(LocationManager.GPS_PROVIDER);
-        mockLocation.setLatitude(latitude);
-        mockLocation.setLongitude(longitude);
-        mockLocation.setAccuracy(accuracy);
-        mockLocation.setTime(System.currentTimeMillis());
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN) {
-            mockLocation.setElapsedRealtimeNanos(SystemClock.elapsedRealtimeNanos());
+    public void setSpoofer(LocationSpoofer spoofer) {
+        if (spoofer == null) {
+            throw new IllegalArgumentException("Argument 'spoofer' cannot be null.");
         }
-        mLocationManager.setTestProviderLocation(LocationManager.GPS_PROVIDER, mockLocation);
+        mSpoofer = spoofer;
     }
 }

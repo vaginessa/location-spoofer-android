@@ -1,13 +1,11 @@
 package com.emmanuelcorrales.locationspoofer.activities;
 
+
 import android.Manifest;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
-import android.location.Location;
-import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityCompat;
@@ -19,17 +17,17 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 
+import com.emmanuelcorrales.android.utils.KeyboardUtils;
+import com.emmanuelcorrales.android.utils.LocationUtils;
+import com.emmanuelcorrales.android.utils.ViewPagerUtils;
 import com.emmanuelcorrales.locationspoofer.R;
 import com.emmanuelcorrales.locationspoofer.ViewPagerAdapter;
 import com.emmanuelcorrales.locationspoofer.fragments.FormFragment;
 import com.emmanuelcorrales.locationspoofer.fragments.dialogs.LocationConfigDialogFragment;
 import com.emmanuelcorrales.locationspoofer.fragments.dialogs.MapHintDialogFragment;
 import com.emmanuelcorrales.locationspoofer.fragments.dialogs.MockConfigDialogFragment;
-import com.emmanuelcorrales.android.utils.KeyboardUtils;
 import com.emmanuelcorrales.locationspoofer.utils.ConfigUtils;
-import com.emmanuelcorrales.android.utils.LocationUtils;
-import com.emmanuelcorrales.locationspoofer.utils.MockLocationUtils;
-import com.emmanuelcorrales.android.utils.ViewPagerUtils;
+import com.emmanuelcorrales.locationspoofer.LocationSpoofer;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -40,22 +38,21 @@ public class MainActivity extends AnalyticsActivity implements OnMapReadyCallbac
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final int REQUEST_PERMISSION_LOCATION = 7676;
-    private static final int DEFAULT_ACCURACY = 5;
     private static final int INDEX_MAP = 0;
     private static final int INDEX_FORM = 1;
 
-    private LocationManager mLocationManager;
     private GoogleMap mMap;
     private DialogFragment mMockConfigDialog = new MockConfigDialogFragment();
     private DialogFragment mLocationConfigDialog = new LocationConfigDialogFragment();
     private DialogFragment mMapHintDialog = new MapHintDialogFragment();
+    private LocationSpoofer mSpoofer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        mSpoofer = new LocationSpoofer(this);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -76,32 +73,17 @@ public class MainActivity extends AnalyticsActivity implements OnMapReadyCallbac
     @Override
     protected void onResume() {
         super.onResume();
-        if (!MockLocationUtils.isMockLocationEnabled(this)) {
+        if (!mSpoofer.canMockLocation()) {
             mMockConfigDialog.show(getSupportFragmentManager(), MockConfigDialogFragment.TAG);
         } else if (!LocationUtils.isGpnOn(this)) {
             mLocationConfigDialog.show(getSupportFragmentManager(), LocationConfigDialogFragment.TAG);
         } else {
-            mLocationManager.addTestProvider(
-                    LocationManager.GPS_PROVIDER,           //name
-                    false,                                  //requiresNetwork
-                    false,                                  //requiresSatellite
-                    false,                                  //requiresCell
-                    false,                                  //hasMonetaryCost
-                    true,                                   //supportsAltitude
-                    true,                                   //supportsSpeed
-                    true,                                   //supportsBearing
-                    0,                                      //powerRequirement
-                    DEFAULT_ACCURACY                        //accuracy
-            );
-            mLocationManager.setTestProviderEnabled(LocationManager.GPS_PROVIDER, true);
-
+            mSpoofer.initializeGpsSpoofing();
             ViewPager viewPager = (ViewPager) findViewById(R.id.viewpager);
             if (viewPager.getCurrentItem() == INDEX_MAP && ConfigUtils.isMapHintVisible(this)) {
                 mMapHintDialog.show(getSupportFragmentManager(), MapHintDialogFragment.TAG);
             }
         }
-
-
     }
 
     @Override
@@ -168,7 +150,7 @@ public class MainActivity extends AnalyticsActivity implements OnMapReadyCallbac
                 .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        mockLocation(latLng.latitude, latLng.longitude);
+                        mSpoofer.mockLocation(latLng.latitude, latLng.longitude);
                     }
                 }).setNegativeButton(android.R.string.no, null).show();
     }
@@ -210,26 +192,10 @@ public class MainActivity extends AnalyticsActivity implements OnMapReadyCallbac
                 ViewPagerUtils.getViewPagerFragment(R.id.viewpager, getSupportFragmentManager(), 1);
 
         if (formFragment == null) {
-            formFragment = FormFragment.newInstance(mLocationManager);
+            formFragment = FormFragment.newInstance(mSpoofer);
         } else {
-            formFragment.setLocationManager(mLocationManager);
+            formFragment.setSpoofer(mSpoofer);
         }
         return formFragment;
-    }
-
-    private void mockLocation(double latitude, double longitude) {
-        mockLocation(latitude, longitude, DEFAULT_ACCURACY);
-    }
-
-    private void mockLocation(double latitude, double longitude, float accuracy) {
-        Location mockLocation = new Location(LocationManager.GPS_PROVIDER);
-        mockLocation.setLatitude(latitude);
-        mockLocation.setLongitude(longitude);
-        mockLocation.setAccuracy(accuracy);
-        mockLocation.setTime(System.currentTimeMillis());
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN) {
-            mockLocation.setElapsedRealtimeNanos(SystemClock.elapsedRealtimeNanos());
-        }
-        mLocationManager.setTestProviderLocation(LocationManager.GPS_PROVIDER, mockLocation);
     }
 }
