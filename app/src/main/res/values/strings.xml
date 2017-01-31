@@ -9,11 +9,17 @@
     <string name="title_activity_maps">Location Spoofer</string>
     <string name="dialog_mock_location">Set your location here?</string>
 
-    <string name="enable_mock_location_dialog">This app requires the permission to mock location.
-    Please enable mock location by going to Setting -> Developer Options -> Enable mock location.
+    <string name="enable_mock_location_dialog_pre_marshmallow">This app requires the permission to mock location.
+    Please enable mock location on Developer Options by going to
+    Please enable mock location by going to <b>Settings</b> > <b>Developer Options</b> > <b>Allow mock locations</b>.
     </string>
 
-    <string name="settings">Settings</string>
+    <string name="enable_mock_location_dialog">This app requires the permission to mock location.
+    Please enable mock location on Developer Options by going to
+        <b>Settings</b> > <b>Developer Options</b> > <b>Select mock location app</b>.
+    </string>
+
+    <string name="settings">Developer Options</string>
 
     <string name="enable_location_dialog">This app uses the GPS to mock your location. Your GPS is turned off
         please turn it on.</string>

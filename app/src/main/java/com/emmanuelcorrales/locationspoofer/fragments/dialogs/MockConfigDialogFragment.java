@@ -3,6 +3,7 @@ package com.emmanuelcorrales.locationspoofer.fragments.dialogs;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
@@ -19,8 +20,14 @@ public class MockConfigDialogFragment extends DialogFragment
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         setCancelable(false);
+        int messageId;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            messageId = R.string.enable_location_dialog;
+        } else {
+            messageId = R.string.enable_mock_location_dialog_pre_marshmallow;
+        }
         return new AlertDialog.Builder(getActivity())
-                .setMessage(R.string.enable_mock_location_dialog)
+                .setMessage(messageId)
                 .setPositiveButton(R.string.settings, this)
                 .create();
     }
