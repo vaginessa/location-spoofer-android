@@ -22,10 +22,12 @@ import android.view.View;
 import com.emmanuelcorrales.locationspoofer.R;
 import com.emmanuelcorrales.locationspoofer.ViewPagerAdapter;
 import com.emmanuelcorrales.locationspoofer.fragments.FormFragment;
+import com.emmanuelcorrales.locationspoofer.fragments.dialogs.LocationConfigDialogFragment;
 import com.emmanuelcorrales.locationspoofer.fragments.dialogs.MapHintDialogFragment;
 import com.emmanuelcorrales.locationspoofer.fragments.dialogs.MockConfigDialogFragment;
 import com.emmanuelcorrales.locationspoofer.utils.AndroidUtils;
 import com.emmanuelcorrales.locationspoofer.utils.ConfigUtils;
+import com.emmanuelcorrales.locationspoofer.utils.LocationUtils;
 import com.emmanuelcorrales.locationspoofer.utils.MockLocationUtils;
 import com.emmanuelcorrales.locationspoofer.utils.ViewPagerUtils;
 import com.google.android.gms.maps.GoogleMap;
@@ -45,6 +47,7 @@ public class MainActivity extends AnalyticsActivity implements OnMapReadyCallbac
     private LocationManager mLocationManager;
     private GoogleMap mMap;
     private DialogFragment mMockConfigDialog = new MockConfigDialogFragment();
+    private DialogFragment mLocationConfigDialog = new LocationConfigDialogFragment();
     private DialogFragment mMapHintDialog = new MapHintDialogFragment();
 
     @Override
@@ -75,7 +78,8 @@ public class MainActivity extends AnalyticsActivity implements OnMapReadyCallbac
         super.onResume();
         if (!MockLocationUtils.isMockLocationEnabled(this)) {
             mMockConfigDialog.show(getSupportFragmentManager(), MockConfigDialogFragment.TAG);
-            return;
+        } else if (!LocationUtils.isGpnOn(this)) {
+            mLocationConfigDialog.show(getSupportFragmentManager(), LocationConfigDialogFragment.TAG);
         } else {
             mLocationManager.addTestProvider(
                     LocationManager.GPS_PROVIDER,           //name
@@ -90,18 +94,24 @@ public class MainActivity extends AnalyticsActivity implements OnMapReadyCallbac
                     DEFAULT_ACCURACY                        //accuracy
             );
             mLocationManager.setTestProviderEnabled(LocationManager.GPS_PROVIDER, true);
+
+            ViewPager viewPager = (ViewPager) findViewById(R.id.viewpager);
+            if (viewPager.getCurrentItem() == INDEX_MAP && ConfigUtils.isMapHintVisible(this)) {
+                mMapHintDialog.show(getSupportFragmentManager(), MapHintDialogFragment.TAG);
+            }
         }
 
-        ViewPager viewPager = (ViewPager) findViewById(R.id.viewpager);
-        if (viewPager.getCurrentItem() == INDEX_MAP && ConfigUtils.isMapHintVisible(this)) {
-            mMapHintDialog.show(getSupportFragmentManager(), MapHintDialogFragment.TAG);
-        }
+
     }
 
     @Override
     protected void onPause() {
         if (mMockConfigDialog.isAdded()) {
             mMockConfigDialog.dismiss();
+        }
+
+        if (mLocationConfigDialog.isAdded()) {
+            mLocationConfigDialog.dismiss();
         }
 
         if (mMapHintDialog.isAdded()) {
