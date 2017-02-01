@@ -21,7 +21,7 @@ import com.emmanuelcorrales.android.utils.KeyboardUtils;
 import com.emmanuelcorrales.android.utils.LocationUtils;
 import com.emmanuelcorrales.android.utils.ViewPagerUtils;
 import com.emmanuelcorrales.locationspoofer.R;
-import com.emmanuelcorrales.locationspoofer.ViewPagerAdapter;
+import com.emmanuelcorrales.locationspoofer.adapters.ViewPagerAdapter;
 import com.emmanuelcorrales.locationspoofer.fragments.FormFragment;
 import com.emmanuelcorrales.locationspoofer.fragments.dialogs.LocationConfigDialogFragment;
 import com.emmanuelcorrales.locationspoofer.fragments.dialogs.MapHintDialogFragment;
