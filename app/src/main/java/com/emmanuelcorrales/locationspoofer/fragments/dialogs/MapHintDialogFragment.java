@@ -1,6 +1,7 @@
 package com.emmanuelcorrales.locationspoofer.fragments.dialogs;
 
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -34,7 +35,10 @@ public class MapHintDialogFragment extends DialogFragment implements DialogInter
 
     @Override
     public void onClick(DialogInterface dialog, int which) {
-        ConfigUtils.setMapHintVisibility(getActivity(), !mCheckBox.isChecked());
+        Context context = getActivity();
+        if (context != null && mCheckBox != null) {
+            ConfigUtils.setMapHintVisibility(context, !mCheckBox.isChecked());
+        }
         dismiss();
     }
 }
