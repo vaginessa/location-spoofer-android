@@ -54,5 +54,5 @@
         android:id="@+id/mock_location"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="OK" />
+        android:text="@string/spoof" />
 </LinearLayout>
