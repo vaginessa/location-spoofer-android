@@ -71,8 +71,8 @@ public class MainActivity extends AnalyticsActivity implements OnMapReadyCallbac
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
+    protected void onResumeFragments() {
+        super.onResumeFragments();
         if (!mSpoofer.canMockLocation()) {
             mMockConfigDialog.show(getSupportFragmentManager(), MockConfigDialogFragment.TAG);
         } else if (!LocationUtils.isGpnOn(this)) {
