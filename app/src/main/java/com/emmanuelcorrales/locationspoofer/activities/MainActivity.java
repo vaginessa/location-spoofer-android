@@ -166,6 +166,8 @@ public class MainActivity extends AnalyticsActivity implements OnMapReadyCallbac
             View view = findViewById(android.R.id.content);
             KeyboardUtils.hideKeyboard(this, view);
 
+            getFormFragment().clearErrors();
+
             if (ConfigUtils.isMapHintVisible(this)) {
                 mMapHintDialog.show(getSupportFragmentManager(), MapHintDialogFragment.TAG);
             }

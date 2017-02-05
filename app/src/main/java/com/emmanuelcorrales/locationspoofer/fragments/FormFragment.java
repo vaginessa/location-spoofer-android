@@ -72,4 +72,15 @@ public class FormFragment extends Fragment implements View.OnClickListener {
         }
         mSpoofer = spoofer;
     }
+
+    public void clearErrors(){
+        EditText latitudeEt = (EditText) getView().findViewById(R.id.latitude);
+        latitudeEt.setError(null);
+
+        EditText longitudeEt = (EditText) getView().findViewById(R.id.longitude);
+        longitudeEt.setError(null);
+
+        EditText accuracyEt = (EditText) getView().findViewById(R.id.accuracy);
+        accuracyEt.setError(null);
+    }
 }
