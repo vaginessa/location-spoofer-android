@@ -2,8 +2,8 @@
     <string name="app_name">Location Spoofer</string>
 
     <!--fragment_form.xml-->
-    <string name="latitude">Latitude:</string>
-    <string name="longitude">Longitude:</string>
+    <string name="latitude">Latitude</string>
+    <string name="longitude">Longitude</string>
     <string name="spoof">Spoof</string>
     <string name="validation_required">Required!</string>
 
