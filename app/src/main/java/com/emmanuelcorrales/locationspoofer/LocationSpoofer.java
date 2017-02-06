@@ -8,11 +8,34 @@ import android.location.LocationManager;
 import android.os.Build;
 import android.os.SystemClock;
 import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 public class LocationSpoofer {
     private static final String TAG = LocationSpoofer.class.getSimpleName();
     private static final int DEFAULT_ACCURACY = 5;
+
+    /**
+     * Check if mock location is enabled on developer options.
+     *
+     * @return true if mock location is enabled else it returns false.
+     */
+    public static boolean canMockLocation(@NonNull Context context) {
+        boolean isEnabled = false;
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                AppOpsManager opsManager = (AppOpsManager) context.getSystemService(Context.APP_OPS_SERVICE);
+                isEnabled = opsManager.checkOp(AppOpsManager.OPSTR_MOCK_LOCATION, android.os.Process.myUid(),
+                        BuildConfig.APPLICATION_ID) == AppOpsManager.MODE_ALLOWED;
+            } else {
+                return !Settings.Secure.getString(context.getContentResolver(),
+                        Settings.Secure.ALLOW_MOCK_LOCATION).equals("0");
+            }
+        } catch (Exception e) {
+            Log.d(TAG, "Mock location is not enabled.");
+        }
+        return isEnabled;
+    }
 
     private Context mContext;
     private LocationManager mLocationManager;
@@ -25,30 +48,9 @@ public class LocationSpoofer {
         mLocationManager = (LocationManager) mContext.getSystemService(Context.LOCATION_SERVICE);
     }
 
-    /**
-     * Check if mock location is enabled on developer options.
-     *
-     * @return true if mock location is enabled else it returns false.
-     */
-    public boolean canMockLocation() {
-        boolean isEnabled = false;
-        try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                AppOpsManager opsManager = (AppOpsManager) mContext.getSystemService(Context.APP_OPS_SERVICE);
-                isEnabled = opsManager.checkOp(AppOpsManager.OPSTR_MOCK_LOCATION, android.os.Process.myUid(),
-                        BuildConfig.APPLICATION_ID) == AppOpsManager.MODE_ALLOWED;
-            } else {
-                return !Settings.Secure.getString(mContext.getContentResolver(),
-                        Settings.Secure.ALLOW_MOCK_LOCATION).equals("0");
-            }
-        } catch (Exception e) {
-            Log.d(TAG, "Mock location is not enabled.");
-        }
-        return isEnabled;
-    }
 
     public void initializeGpsSpoofing() {
-        if (!canMockLocation()) {
+        if (!canMockLocation(mContext)) {
             Log.e(TAG, "Cannot initialize GPS spoofing. Mock location is not enabled on Developer options.");
             return;
         }
