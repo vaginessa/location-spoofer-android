@@ -4,7 +4,6 @@
     <!--fragment_form.xml-->
     <string name="latitude">Latitude:</string>
     <string name="longitude">Longitude:</string>
-    <string name="accuracy">Accuracy:</string>
     <string name="spoof">Spoof</string>
     <string name="validation_required">Required!</string>
 
