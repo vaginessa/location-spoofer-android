@@ -47,16 +47,13 @@ public class FormFragment extends Fragment implements View.OnClickListener {
 
         EditText latitudeEt = (EditText) getView().findViewById(R.id.latitude);
         EditText longitudeEt = (EditText) getView().findViewById(R.id.longitude);
-        EditText accuracyEt = (EditText) getView().findViewById(R.id.accuracy);
-        String message;
 
+        String message;
         if (EditTextUtils.validateEmpty(latitudeEt, R.string.validation_required)
-                & EditTextUtils.validateEmpty(longitudeEt, R.string.validation_required)
-                & EditTextUtils.validateEmpty(accuracyEt, R.string.validation_required)) {
+                & EditTextUtils.validateEmpty(longitudeEt, R.string.validation_required)) {
             double latitude = Double.valueOf(latitudeEt.getText().toString());
             double longitude = Double.valueOf(longitudeEt.getText().toString());
-            float accuracy = Float.valueOf(accuracyEt.getText().toString());
-            mSpoofer.mockLocation(latitude, longitude, accuracy);
+            mSpoofer.mockLocation(latitude, longitude);
             message = "The location has been changed to (" + latitude + "," + longitude + ")";
         } else {
             message = "Spoofing the location has failed.";
@@ -73,14 +70,11 @@ public class FormFragment extends Fragment implements View.OnClickListener {
         mSpoofer = spoofer;
     }
 
-    public void clearErrors(){
+    public void clearErrors() {
         EditText latitudeEt = (EditText) getView().findViewById(R.id.latitude);
         latitudeEt.setError(null);
 
         EditText longitudeEt = (EditText) getView().findViewById(R.id.longitude);
         longitudeEt.setError(null);
-
-        EditText accuracyEt = (EditText) getView().findViewById(R.id.accuracy);
-        accuracyEt.setError(null);
     }
 }
