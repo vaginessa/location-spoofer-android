@@ -25,14 +25,17 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 public class MainActivity extends AnalyticsActivity implements OnMapReadyCallback,
-        GoogleMap.OnMapLongClickListener, View.OnClickListener {
+        GoogleMap.OnMapLongClickListener, View.OnClickListener, GoogleMap.OnMarkerClickListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final int REQUEST_PERMISSION_LOCATION = 7676;
 
     private GoogleMap mMap;
+    private Marker mMarker;
     private DialogFragment mMockConfigDialog = new MockConfigDialogFragment();
     private DialogFragment mLocationConfigDialog = new LocationConfigDialogFragment();
     private DialogFragment mMapHintDialog = new MapHintDialogFragment();
@@ -111,7 +114,9 @@ public class MainActivity extends AnalyticsActivity implements OnMapReadyCallbac
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        mMap.getUiSettings().setMapToolbarEnabled(false);
         mMap.setOnMapLongClickListener(this);
+        mMap.setOnMarkerClickListener(this);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                     == PackageManager.PERMISSION_GRANTED) {
@@ -128,15 +133,33 @@ public class MainActivity extends AnalyticsActivity implements OnMapReadyCallbac
 
     @Override
     public void onMapLongClick(final LatLng latLng) {
+        if (mMarker == null) {
+            mMarker = mMap.addMarker(new MarkerOptions()
+                    .position(latLng)
+                    .draggable(true));
+        } else {
+            mMarker.setPosition(latLng);
+        }
+    }
+
+    @Override
+    public boolean onMarkerClick(Marker marker) {
         Bundle args = new Bundle();
-        args.putDouble(SpoofDialogFragment.KEY_LATITUDE, latLng.latitude);
-        args.putDouble(SpoofDialogFragment.KEY_LONGITUDE, latLng.longitude);
+        args.putDouble(SpoofDialogFragment.KEY_LATITUDE, marker.getPosition().latitude);
+        args.putDouble(SpoofDialogFragment.KEY_LONGITUDE, marker.getPosition().longitude);
         mSpoofDialog.setArguments(args);
         mSpoofDialog.show(getSupportFragmentManager(), SpoofDialogFragment.TAG);
+        return false;
     }
 
     @Override
     public void onClick(View v) {
+        if (mMarker != null) {
+            Bundle args = new Bundle();
+            args.putDouble(SpoofDialogFragment.KEY_LATITUDE, mMarker.getPosition().latitude);
+            args.putDouble(SpoofDialogFragment.KEY_LONGITUDE, mMarker.getPosition().longitude);
+            mSpoofDialog.setArguments(args);
+        }
         mSpoofDialog.show(getSupportFragmentManager(), SpoofDialogFragment.TAG);
     }
 }
