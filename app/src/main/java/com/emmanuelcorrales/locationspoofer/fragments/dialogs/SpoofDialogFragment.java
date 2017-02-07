@@ -1,10 +1,12 @@
 package com.emmanuelcorrales.locationspoofer.fragments.dialogs;
 
+import android.app.Activity;
 import android.app.Dialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
 import android.text.Editable;
@@ -72,8 +74,8 @@ public class SpoofDialogFragment extends DialogFragment implements DialogInterfa
 
     @Override
     public void onClick(DialogInterface dialog, int which) {
-        Context context = getActivity();
-        if (context == null || mLatEt.length() == 0 || mLongEt.length() == 0) {
+        Activity activity = getActivity();
+        if (activity == null || mLatEt.length() == 0 || mLongEt.length() == 0) {
             return;
         }
 
@@ -83,6 +85,13 @@ public class SpoofDialogFragment extends DialogFragment implements DialogInterfa
         LocationSpoofer spoofer = new LocationSpoofer(getActivity());
         spoofer.initializeGpsSpoofing();
         spoofer.mockLocation(latitude, longitude);
+
+        CoordinatorLayout coordinatorLayout = (CoordinatorLayout)
+                activity.getWindow().getDecorView().findViewById(R.id.coordinator_layout);
+
+        Snackbar.make(coordinatorLayout,
+                "Spoofed location at " + latitude + "," + longitude + ".",
+                Snackbar.LENGTH_SHORT).show();
     }
 
     @Override
