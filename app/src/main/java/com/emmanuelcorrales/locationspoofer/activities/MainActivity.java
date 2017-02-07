@@ -6,10 +6,12 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.View;
 
 import com.emmanuelcorrales.android.utils.LocationUtils;
 import com.emmanuelcorrales.locationspoofer.LocationSpoofer;
@@ -25,7 +27,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 
 public class MainActivity extends AnalyticsActivity implements OnMapReadyCallback,
-        GoogleMap.OnMapLongClickListener {
+        GoogleMap.OnMapLongClickListener, View.OnClickListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final int REQUEST_PERMISSION_LOCATION = 7676;
@@ -34,6 +36,7 @@ public class MainActivity extends AnalyticsActivity implements OnMapReadyCallbac
     private DialogFragment mMockConfigDialog = new MockConfigDialogFragment();
     private DialogFragment mLocationConfigDialog = new LocationConfigDialogFragment();
     private DialogFragment mMapHintDialog = new MapHintDialogFragment();
+    private DialogFragment mSpoofDialog = new SpoofDialogFragment();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +45,11 @@ public class MainActivity extends AnalyticsActivity implements OnMapReadyCallbac
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        if (fab != null) {
+            fab.setOnClickListener(this);
+        }
 
         SupportMapFragment mapFragment =
                 (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map_fragment);
@@ -120,7 +128,15 @@ public class MainActivity extends AnalyticsActivity implements OnMapReadyCallbac
 
     @Override
     public void onMapLongClick(final LatLng latLng) {
-        SpoofDialogFragment sdf = SpoofDialogFragment.newInstance(latLng.latitude, latLng.longitude);
-        sdf.show(getSupportFragmentManager(), SpoofDialogFragment.TAG);
+        Bundle args = new Bundle();
+        args.putDouble(SpoofDialogFragment.KEY_LATITUDE, latLng.latitude);
+        args.putDouble(SpoofDialogFragment.KEY_LONGITUDE, latLng.longitude);
+        mSpoofDialog.setArguments(args);
+        mSpoofDialog.show(getSupportFragmentManager(), SpoofDialogFragment.TAG);
+    }
+
+    @Override
+    public void onClick(View v) {
+        mSpoofDialog.show(getSupportFragmentManager(), SpoofDialogFragment.TAG);
     }
 }
