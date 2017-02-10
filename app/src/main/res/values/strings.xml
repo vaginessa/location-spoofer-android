@@ -9,7 +9,7 @@
 
     <!--activity_maps.xml-->
     <string name="title_activity_maps">Location Spoofer</string>
-    <string name="dialog_mock_location">Set your location here?</string>
+    <string name="dialog_mock_location">Spoof your location here?</string>
 
     <string name="enable_mock_location_dialog_pre_marshmallow">This app requires the permission to mock location.
     Please enable mock location on Developer Options by going to
