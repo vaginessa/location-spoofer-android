@@ -22,6 +22,8 @@ public class SpoofDialogFragment extends DialogFragment implements DialogInterfa
 
     public interface OnSpoofListener {
         void onSpoof(LatLng latLng);
+
+        void onSpoofCancel();
     }
 
     public static final String TAG = SpoofDialogFragment.class.getSimpleName();
@@ -73,7 +75,7 @@ public class SpoofDialogFragment extends DialogFragment implements DialogInterfa
                 .setTitle(R.string.dialog_mock_location)
                 .setView(view)
                 .setPositiveButton(android.R.string.ok, this)
-                .setNegativeButton(android.R.string.cancel, null)
+                .setNegativeButton(android.R.string.cancel, this)
                 .create();
     }
 
@@ -85,20 +87,28 @@ public class SpoofDialogFragment extends DialogFragment implements DialogInterfa
 
     @Override
     public void onClick(DialogInterface dialog, int which) {
-        Activity activity = getActivity();
-        if (activity == null || mLatEt.length() == 0 || mLongEt.length() == 0) {
-            return;
+        switch (which) {
+            case DialogInterface.BUTTON_POSITIVE:
+                Activity activity = getActivity();
+                if (activity == null || mLatEt.length() == 0 || mLongEt.length() == 0) {
+                    return;
+                }
+
+                double latitude = Double.valueOf(mLatEt.getText().toString());
+                double longitude = Double.valueOf(mLongEt.getText().toString());
+
+                LocationSpoofer spoofer = new LocationSpoofer(getActivity());
+                spoofer.initializeGpsSpoofing();
+                spoofer.mockLocation(latitude, longitude);
+
+                LatLng latLng = new LatLng(latitude, longitude);
+                mOnSpoofListener.onSpoof(latLng);
+                break;
+
+            case DialogInterface.BUTTON_NEGATIVE:
+                mOnSpoofListener.onSpoofCancel();
+                break;
         }
-
-        double latitude = Double.valueOf(mLatEt.getText().toString());
-        double longitude = Double.valueOf(mLongEt.getText().toString());
-
-        LocationSpoofer spoofer = new LocationSpoofer(getActivity());
-        spoofer.initializeGpsSpoofing();
-        spoofer.mockLocation(latitude, longitude);
-
-        LatLng latLng = new LatLng(latitude, longitude);
-        mOnSpoofListener.onSpoof(latLng);
     }
 
     @Override

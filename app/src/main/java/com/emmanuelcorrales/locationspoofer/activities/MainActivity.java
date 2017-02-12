@@ -33,7 +33,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 public class MainActivity extends AnalyticsActivity implements OnMapReadyCallback,
         GoogleMap.OnMapLongClickListener, View.OnClickListener, GoogleMap.OnMarkerClickListener,
-        SpoofDialogFragment.OnSpoofListener {
+        GoogleMap.OnMarkerDragListener, SpoofDialogFragment.OnSpoofListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final int REQUEST_PERMISSION_LOCATION = 7676;
@@ -43,6 +43,7 @@ public class MainActivity extends AnalyticsActivity implements OnMapReadyCallbac
     private DialogFragment mMockConfigDialog = new MockConfigDialogFragment();
     private DialogFragment mLocationConfigDialog = new LocationConfigDialogFragment();
     private DialogFragment mMapHintDialog = new MapHintDialogFragment();
+    private LatLng mPreviousMarkerLatLng;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -120,6 +121,7 @@ public class MainActivity extends AnalyticsActivity implements OnMapReadyCallbac
         mMap.getUiSettings().setMapToolbarEnabled(false);
         mMap.setOnMapLongClickListener(this);
         mMap.setOnMarkerClickListener(this);
+        mMap.setOnMarkerDragListener(this);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                     == PackageManager.PERMISSION_GRANTED) {
@@ -170,6 +172,14 @@ public class MainActivity extends AnalyticsActivity implements OnMapReadyCallbac
                 Snackbar.LENGTH_SHORT).show();
 
         mMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
+        mPreviousMarkerLatLng = latLng;
+    }
+
+    @Override
+    public void onSpoofCancel() {
+        if (mPreviousMarkerLatLng != null) {
+            mMarker.setPosition(mPreviousMarkerLatLng);
+        }
     }
 
     private void moveDefaultMarker(LatLng latLng) {
@@ -180,5 +190,22 @@ public class MainActivity extends AnalyticsActivity implements OnMapReadyCallbac
         } else {
             mMarker.setPosition(latLng);
         }
+    }
+
+    @Override
+    public void onMarkerDragStart(Marker marker) {
+        //Don't use marker.getPosition()
+        //The marker shifts up by some distance when I start dragging.
+    }
+
+    @Override
+    public void onMarkerDrag(Marker marker) {
+
+    }
+
+    @Override
+    public void onMarkerDragEnd(Marker marker) {
+        DialogFragment dialogFragment = SpoofDialogFragment.newInstance(this, marker.getPosition());
+        dialogFragment.show(getSupportFragmentManager(), SpoofDialogFragment.TAG);
     }
 }
