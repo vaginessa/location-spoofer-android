@@ -136,7 +136,8 @@ public class MainActivity extends AnalyticsActivity implements OnMapReadyCallbac
 
     @Override
     public void onMapLongClick(final LatLng latLng) {
-        moveDefaultMarker(latLng);
+        DialogFragment dialogFragment = SpoofDialogFragment.newInstance(this, latLng);
+        dialogFragment.show(getSupportFragmentManager(), SpoofDialogFragment.TAG);
     }
 
     @Override
