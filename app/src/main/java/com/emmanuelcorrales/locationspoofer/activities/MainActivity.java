@@ -32,8 +32,8 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 public class MainActivity extends AnalyticsActivity implements OnMapReadyCallback,
-        GoogleMap.OnMapLongClickListener, View.OnClickListener, GoogleMap.OnMarkerClickListener,
-        GoogleMap.OnMarkerDragListener, SpoofDialogFragment.OnSpoofListener {
+        GoogleMap.OnMapLongClickListener, View.OnClickListener, GoogleMap.OnMarkerDragListener,
+        SpoofDialogFragment.OnSpoofListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final int REQUEST_PERMISSION_LOCATION = 7676;
@@ -120,7 +120,6 @@ public class MainActivity extends AnalyticsActivity implements OnMapReadyCallbac
         mMap = googleMap;
         mMap.getUiSettings().setMapToolbarEnabled(false);
         mMap.setOnMapLongClickListener(this);
-        mMap.setOnMarkerClickListener(this);
         mMap.setOnMarkerDragListener(this);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
@@ -140,13 +139,6 @@ public class MainActivity extends AnalyticsActivity implements OnMapReadyCallbac
     public void onMapLongClick(final LatLng latLng) {
         DialogFragment dialogFragment = SpoofDialogFragment.newInstance(this, latLng);
         dialogFragment.show(getSupportFragmentManager(), SpoofDialogFragment.TAG);
-    }
-
-    @Override
-    public boolean onMarkerClick(Marker marker) {
-        DialogFragment dialogFragment = SpoofDialogFragment.newInstance(this, marker.getPosition());
-        dialogFragment.show(getSupportFragmentManager(), SpoofDialogFragment.TAG);
-        return false;
     }
 
     @Override
