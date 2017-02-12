@@ -5,8 +5,6 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.design.widget.CoordinatorLayout;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
 import android.text.Editable;
@@ -16,26 +14,40 @@ import android.widget.EditText;
 
 import com.emmanuelcorrales.locationspoofer.LocationSpoofer;
 import com.emmanuelcorrales.locationspoofer.R;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.model.LatLng;
 
 
 public class SpoofDialogFragment extends DialogFragment implements DialogInterface.OnClickListener,
         TextWatcher {
 
+    public interface OnSpoofListener {
+        void onSpoof(LatLng latLng);
+    }
+
     public static final String TAG = SpoofDialogFragment.class.getSimpleName();
     public static final String KEY_LATITUDE = "key_latitude";
     public static final String KEY_LONGITUDE = "key_longitude";
 
-    public static SpoofDialogFragment newInstance(double latitude, double longitude) {
-        Bundle args = new Bundle();
-        args.putDouble(KEY_LATITUDE, latitude);
-        args.putDouble(KEY_LONGITUDE, longitude);
+    public static SpoofDialogFragment newInstance(OnSpoofListener onSpoofListener) {
         SpoofDialogFragment sdf = new SpoofDialogFragment();
+        sdf.mOnSpoofListener = onSpoofListener;
+        return sdf;
+    }
+
+
+    public static SpoofDialogFragment newInstance(OnSpoofListener onSpoofListener, LatLng latLng) {
+        Bundle args = new Bundle();
+        args.putDouble(KEY_LATITUDE, latLng.latitude);
+        args.putDouble(KEY_LONGITUDE, latLng.longitude);
+        SpoofDialogFragment sdf = newInstance(onSpoofListener);
         sdf.setArguments(args);
         return sdf;
     }
 
     private EditText mLatEt;
     private EditText mLongEt;
+    private OnSpoofListener mOnSpoofListener;
 
     @NonNull
     @Override
@@ -86,12 +98,8 @@ public class SpoofDialogFragment extends DialogFragment implements DialogInterfa
         spoofer.initializeGpsSpoofing();
         spoofer.mockLocation(latitude, longitude);
 
-        CoordinatorLayout coordinatorLayout = (CoordinatorLayout)
-                activity.getWindow().getDecorView().findViewById(R.id.coordinator_layout);
-
-        Snackbar.make(coordinatorLayout,
-                "Spoofed location at " + latitude + "," + longitude + ".",
-                Snackbar.LENGTH_SHORT).show();
+        LatLng latLng = new LatLng(latitude, longitude);
+        mOnSpoofListener.onSpoof(latLng);
     }
 
     @Override

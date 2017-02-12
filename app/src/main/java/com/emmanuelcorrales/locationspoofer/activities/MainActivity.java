@@ -6,7 +6,9 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.widget.Toolbar;
@@ -21,6 +23,7 @@ import com.emmanuelcorrales.locationspoofer.fragments.dialogs.MapHintDialogFragm
 import com.emmanuelcorrales.locationspoofer.fragments.dialogs.MockConfigDialogFragment;
 import com.emmanuelcorrales.locationspoofer.fragments.dialogs.SpoofDialogFragment;
 import com.emmanuelcorrales.locationspoofer.utils.ConfigUtils;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -29,7 +32,8 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 public class MainActivity extends AnalyticsActivity implements OnMapReadyCallback,
-        GoogleMap.OnMapLongClickListener, View.OnClickListener, GoogleMap.OnMarkerClickListener {
+        GoogleMap.OnMapLongClickListener, View.OnClickListener, GoogleMap.OnMarkerClickListener,
+        SpoofDialogFragment.OnSpoofListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final int REQUEST_PERMISSION_LOCATION = 7676;
@@ -39,7 +43,6 @@ public class MainActivity extends AnalyticsActivity implements OnMapReadyCallbac
     private DialogFragment mMockConfigDialog = new MockConfigDialogFragment();
     private DialogFragment mLocationConfigDialog = new LocationConfigDialogFragment();
     private DialogFragment mMapHintDialog = new MapHintDialogFragment();
-    private DialogFragment mSpoofDialog = new SpoofDialogFragment();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -133,6 +136,42 @@ public class MainActivity extends AnalyticsActivity implements OnMapReadyCallbac
 
     @Override
     public void onMapLongClick(final LatLng latLng) {
+        moveDefaultMarker(latLng);
+    }
+
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+        DialogFragment dialogFragment = SpoofDialogFragment.newInstance(this, marker.getPosition());
+        dialogFragment.show(getSupportFragmentManager(), SpoofDialogFragment.TAG);
+        return false;
+    }
+
+    @Override
+    public void onClick(View v) {
+        DialogFragment dialogFragment;
+        if (mMarker == null) {
+            dialogFragment = SpoofDialogFragment.newInstance(this);
+        } else {
+            dialogFragment = SpoofDialogFragment.newInstance(this, mMarker.getPosition());
+        }
+        dialogFragment.show(getSupportFragmentManager(), SpoofDialogFragment.TAG);
+    }
+
+    @Override
+    public void onSpoof(LatLng latLng) {
+        moveDefaultMarker(latLng);
+
+        CoordinatorLayout coordinatorLayout =
+                (CoordinatorLayout) findViewById(R.id.coordinator_layout);
+
+        Snackbar.make(coordinatorLayout,
+                "Spoofed location at " + latLng.latitude + "," + latLng.longitude + ".",
+                Snackbar.LENGTH_SHORT).show();
+
+        mMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
+    }
+
+    private void moveDefaultMarker(LatLng latLng) {
         if (mMarker == null) {
             mMarker = mMap.addMarker(new MarkerOptions()
                     .position(latLng)
@@ -140,26 +179,5 @@ public class MainActivity extends AnalyticsActivity implements OnMapReadyCallbac
         } else {
             mMarker.setPosition(latLng);
         }
-    }
-
-    @Override
-    public boolean onMarkerClick(Marker marker) {
-        Bundle args = new Bundle();
-        args.putDouble(SpoofDialogFragment.KEY_LATITUDE, marker.getPosition().latitude);
-        args.putDouble(SpoofDialogFragment.KEY_LONGITUDE, marker.getPosition().longitude);
-        mSpoofDialog.setArguments(args);
-        mSpoofDialog.show(getSupportFragmentManager(), SpoofDialogFragment.TAG);
-        return false;
-    }
-
-    @Override
-    public void onClick(View v) {
-        if (mMarker != null) {
-            Bundle args = new Bundle();
-            args.putDouble(SpoofDialogFragment.KEY_LATITUDE, mMarker.getPosition().latitude);
-            args.putDouble(SpoofDialogFragment.KEY_LONGITUDE, mMarker.getPosition().longitude);
-            mSpoofDialog.setArguments(args);
-        }
-        mSpoofDialog.show(getSupportFragmentManager(), SpoofDialogFragment.TAG);
     }
 }
