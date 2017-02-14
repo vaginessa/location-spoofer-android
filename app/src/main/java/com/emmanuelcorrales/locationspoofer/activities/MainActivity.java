@@ -37,6 +37,7 @@ public class MainActivity extends AnalyticsActivity implements OnMapReadyCallbac
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final int REQUEST_PERMISSION_LOCATION = 7676;
+    private static final String KEY_SATE_MARKER_LATLNG = "key_state_marker_latlng";
 
     private GoogleMap mMap;
     private Marker mMarker;
@@ -66,6 +67,19 @@ public class MainActivity extends AnalyticsActivity implements OnMapReadyCallbac
     }
 
     @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        if (savedInstanceState == null) {
+            return;
+        }
+        LatLng latLng = (LatLng) savedInstanceState.get(KEY_SATE_MARKER_LATLNG);
+        if (latLng == null) {
+            return;
+        }
+        mPreviousMarkerLatLng = latLng;
+    }
+
+    @Override
     protected void onResumeFragments() {
         super.onResumeFragments();
         if (!LocationSpoofer.canMockLocation(this)) {
@@ -92,6 +106,15 @@ public class MainActivity extends AnalyticsActivity implements OnMapReadyCallbac
         }
 
         super.onPause();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        if (mMarker == null) {
+            return;
+        }
+        outState.putParcelable(KEY_SATE_MARKER_LATLNG, mMarker.getPosition());
+        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -132,6 +155,9 @@ public class MainActivity extends AnalyticsActivity implements OnMapReadyCallbac
             }
         } else {
             mMap.setMyLocationEnabled(true);
+        }
+        if (mPreviousMarkerLatLng != null) {
+            moveDefaultMarker(mPreviousMarkerLatLng);
         }
     }
 
