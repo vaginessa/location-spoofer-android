@@ -70,7 +70,7 @@ public class MainActivity extends AnalyticsActivity implements OnMapReadyCallbac
         super.onResumeFragments();
         if (!LocationSpoofer.canMockLocation(this)) {
             mMockConfigDialog.show(getSupportFragmentManager(), MockConfigDialogFragment.TAG);
-        } else if (!LocationUtils.isGpnOn(this)) {
+        } else if (!LocationUtils.isGpnOn(this) && !mLocationConfigDialog.isAdded()) {
             mLocationConfigDialog.show(getSupportFragmentManager(), LocationConfigDialogFragment.TAG);
         } else if (ConfigUtils.isMapHintVisible(this)) {
             mMapHintDialog.show(getSupportFragmentManager(), MapHintDialogFragment.TAG);

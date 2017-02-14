@@ -28,6 +28,11 @@ public class LocationConfigDialogFragment extends DialogFragment
 
     @Override
     public void onClick(DialogInterface dialog, int which) {
+        //Bug fix for crashing on Samsung S3 Android 4.3.
+        //Check if fragment is attached to an Activity.
+        if (getActivity() == null) {
+            return;
+        }
         startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
     }
 }
