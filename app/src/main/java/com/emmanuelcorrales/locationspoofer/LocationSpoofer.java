@@ -11,9 +11,11 @@ import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
+import com.google.android.gms.maps.model.LatLng;
+
 public class LocationSpoofer {
     private static final String TAG = LocationSpoofer.class.getSimpleName();
-    private static final int DEFAULT_ACCURACY = 5;
+    private static final int DEFAULT_ACCURACY = 1;
 
     /**
      * Check if mock location is enabled on developer options.
@@ -48,7 +50,6 @@ public class LocationSpoofer {
         mLocationManager = (LocationManager) mContext.getSystemService(Context.LOCATION_SERVICE);
     }
 
-
     public void initializeGpsSpoofing() {
         if (!canMockLocation(mContext)) {
             Log.e(TAG, "Cannot initialize GPS spoofing. Mock location is not enabled on Developer options.");
@@ -67,6 +68,10 @@ public class LocationSpoofer {
                 DEFAULT_ACCURACY                        //accuracy
         );
         mLocationManager.setTestProviderEnabled(LocationManager.GPS_PROVIDER, true);
+    }
+
+    public void mockLocation(LatLng latLng){
+        mockLocation(latLng.latitude, latLng.longitude);
     }
 
     public void mockLocation(double latitude, double longitude) {

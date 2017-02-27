@@ -96,11 +96,6 @@ public class SpoofDialogFragment extends DialogFragment implements DialogInterfa
 
                 double latitude = Double.valueOf(mLatEt.getText().toString());
                 double longitude = Double.valueOf(mLongEt.getText().toString());
-
-                LocationSpoofer spoofer = new LocationSpoofer(getActivity());
-                spoofer.initializeGpsSpoofing();
-                spoofer.mockLocation(latitude, longitude);
-
                 LatLng latLng = new LatLng(latitude, longitude);
                 mOnSpoofListener.onSpoof(latLng);
                 break;

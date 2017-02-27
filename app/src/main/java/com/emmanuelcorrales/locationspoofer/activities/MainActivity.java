@@ -2,9 +2,13 @@ package com.emmanuelcorrales.locationspoofer.activities;
 
 
 import android.Manifest;
+import android.content.ComponentName;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
@@ -18,6 +22,7 @@ import android.view.View;
 import com.emmanuelcorrales.android.utils.LocationUtils;
 import com.emmanuelcorrales.locationspoofer.LocationSpoofer;
 import com.emmanuelcorrales.locationspoofer.R;
+import com.emmanuelcorrales.locationspoofer.SpooferService;
 import com.emmanuelcorrales.locationspoofer.fragments.dialogs.LocationConfigDialogFragment;
 import com.emmanuelcorrales.locationspoofer.fragments.dialogs.MapHintDialogFragment;
 import com.emmanuelcorrales.locationspoofer.fragments.dialogs.MockConfigDialogFragment;
@@ -31,7 +36,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-public class MainActivity extends AnalyticsActivity implements OnMapReadyCallback,
+public class MainActivity extends AnalyticsActivity implements ServiceConnection, OnMapReadyCallback,
         GoogleMap.OnMapLongClickListener, View.OnClickListener, GoogleMap.OnMarkerDragListener,
         SpoofDialogFragment.OnSpoofListener {
 
@@ -45,6 +50,7 @@ public class MainActivity extends AnalyticsActivity implements OnMapReadyCallbac
     private DialogFragment mLocationConfigDialog = new LocationConfigDialogFragment();
     private DialogFragment mMapHintDialog = new MapHintDialogFragment();
     private LatLng mPreviousMarkerLatLng;
+    private SpooferService mSpooferService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,6 +86,13 @@ public class MainActivity extends AnalyticsActivity implements OnMapReadyCallbac
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        Intent intent = new Intent(this, SpooferService.class);
+        bindService(intent, this, BIND_AUTO_CREATE);
+    }
+
+    @Override
     protected void onResumeFragments() {
         super.onResumeFragments();
         if (!LocationSpoofer.canMockLocation(this)) {
@@ -106,6 +119,12 @@ public class MainActivity extends AnalyticsActivity implements OnMapReadyCallbac
         }
 
         super.onPause();
+    }
+
+    @Override
+    protected void onStop() {
+        unbindService(this);
+        super.onStop();
     }
 
     @Override
@@ -180,6 +199,7 @@ public class MainActivity extends AnalyticsActivity implements OnMapReadyCallbac
 
     @Override
     public void onSpoof(LatLng latLng) {
+        mSpooferService.spoof(latLng);
         moveDefaultMarker(latLng);
 
         CoordinatorLayout coordinatorLayout =
@@ -225,5 +245,18 @@ public class MainActivity extends AnalyticsActivity implements OnMapReadyCallbac
     public void onMarkerDragEnd(Marker marker) {
         DialogFragment dialogFragment = SpoofDialogFragment.newInstance(this, marker.getPosition());
         dialogFragment.show(getSupportFragmentManager(), SpoofDialogFragment.TAG);
+    }
+
+    @Override
+    public void onServiceConnected(ComponentName name, IBinder service) {
+        Log.d(TAG, "onServiceConnected");
+        SpooferService.SpooferBinder binder = (SpooferService.SpooferBinder) service;
+        mSpooferService = binder.getService();
+    }
+
+    @Override
+    public void onServiceDisconnected(ComponentName name) {
+        Log.d(TAG, "onServiceDisconnected");
+        mSpooferService = null;
     }
 }
