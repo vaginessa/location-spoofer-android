@@ -95,14 +95,4 @@ public class LocationSpoofer {
         }
         mLocationManager.setTestProviderLocation(LocationManager.GPS_PROVIDER, nextLocation);
     }
-
-    private String getBestProvider() {
-        Criteria criteria = new Criteria();
-        criteria.setAccuracy(Criteria.ACCURACY_FINE);
-        String provider = mLocationManager.getBestProvider(criteria, false);
-        if (provider == null) {
-            Log.e(TAG, "No location provider found!");
-        }
-        return provider;
-    }
 }
