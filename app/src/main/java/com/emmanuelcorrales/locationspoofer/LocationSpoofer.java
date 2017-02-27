@@ -41,6 +41,7 @@ public class LocationSpoofer {
 
     private Context mContext;
     private LocationManager mLocationManager;
+    private LatLng mLatLang;
 
     public LocationSpoofer(Context context) {
         if (context == null) {
@@ -70,15 +71,20 @@ public class LocationSpoofer {
         mLocationManager.setTestProviderEnabled(LocationManager.GPS_PROVIDER, true);
     }
 
-    public void mockLocation(LatLng latLng){
-        mockLocation(latLng.latitude, latLng.longitude);
+    public LatLng getLatLng() {
+        return mLatLang;
     }
 
-    public void mockLocation(double latitude, double longitude) {
+    public void mockLocation(LatLng latLng) {
+        mLatLang = latLng;
+        mockLocation(mLatLang.latitude, mLatLang.longitude);
+    }
+
+    private void mockLocation(double latitude, double longitude) {
         mockLocation(latitude, longitude, DEFAULT_ACCURACY);
     }
 
-    public void mockLocation(double latitude, double longitude, float accuracy) {
+    private void mockLocation(double latitude, double longitude, float accuracy) {
         Location nextLocation = new Location(LocationManager.GPS_PROVIDER);
         nextLocation.setLatitude(latitude);
         nextLocation.setLongitude(longitude);

@@ -49,7 +49,6 @@ public class MainActivity extends AnalyticsActivity implements ServiceConnection
     private DialogFragment mMockConfigDialog = new MockConfigDialogFragment();
     private DialogFragment mLocationConfigDialog = new LocationConfigDialogFragment();
     private DialogFragment mMapHintDialog = new MapHintDialogFragment();
-    private LatLng mPreviousMarkerLatLng;
     private SpooferService mSpooferService;
 
     @Override
@@ -73,22 +72,10 @@ public class MainActivity extends AnalyticsActivity implements ServiceConnection
     }
 
     @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-        if (savedInstanceState == null) {
-            return;
-        }
-        LatLng latLng = (LatLng) savedInstanceState.get(KEY_SATE_MARKER_LATLNG);
-        if (latLng == null) {
-            return;
-        }
-        mPreviousMarkerLatLng = latLng;
-    }
-
-    @Override
     protected void onStart() {
         super.onStart();
         Intent intent = new Intent(this, SpooferService.class);
+        startService(intent);
         bindService(intent, this, BIND_AUTO_CREATE);
     }
 
@@ -175,9 +162,7 @@ public class MainActivity extends AnalyticsActivity implements ServiceConnection
         } else {
             mMap.setMyLocationEnabled(true);
         }
-        if (mPreviousMarkerLatLng != null) {
-            moveDefaultMarker(mPreviousMarkerLatLng);
-        }
+        restoreMarkerPosition();
     }
 
     @Override
@@ -210,25 +195,13 @@ public class MainActivity extends AnalyticsActivity implements ServiceConnection
                 Snackbar.LENGTH_SHORT).show();
 
         mMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
-        mPreviousMarkerLatLng = latLng;
     }
 
     @Override
     public void onSpoofCancel() {
-        if (mPreviousMarkerLatLng != null) {
-            mMarker.setPosition(mPreviousMarkerLatLng);
-        }
+        restoreMarkerPosition();
     }
 
-    private void moveDefaultMarker(LatLng latLng) {
-        if (mMarker == null) {
-            mMarker = mMap.addMarker(new MarkerOptions()
-                    .position(latLng)
-                    .draggable(true));
-        } else {
-            mMarker.setPosition(latLng);
-        }
-    }
 
     @Override
     public void onMarkerDragStart(Marker marker) {
@@ -252,11 +225,28 @@ public class MainActivity extends AnalyticsActivity implements ServiceConnection
         Log.d(TAG, "onServiceConnected");
         SpooferService.SpooferBinder binder = (SpooferService.SpooferBinder) service;
         mSpooferService = binder.getService();
+        restoreMarkerPosition();
     }
 
     @Override
     public void onServiceDisconnected(ComponentName name) {
         Log.d(TAG, "onServiceDisconnected");
         mSpooferService = null;
+    }
+
+    private void restoreMarkerPosition() {
+        if (mSpooferService != null && mSpooferService.getSpoofedLocation() != null) {
+            moveDefaultMarker(mSpooferService.getSpoofedLocation());
+        }
+    }
+
+    private void moveDefaultMarker(LatLng latLng) {
+        if (mMarker == null) {
+            mMarker = mMap.addMarker(new MarkerOptions()
+                    .position(latLng)
+                    .draggable(true));
+        } else {
+            mMarker.setPosition(latLng);
+        }
     }
 }

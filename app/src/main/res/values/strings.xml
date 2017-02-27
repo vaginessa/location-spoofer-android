@@ -27,4 +27,8 @@
 
     <!--dialog_checkbox.xml-->
     <string name="do_not_show_again">Do not show this again.</string>
+
+    <!--notification-->
+    <string name="notification_content">Click to open.</string>
+    <string name="notification_stop_spoofing">Stop spoofing.</string>
 </resources>
