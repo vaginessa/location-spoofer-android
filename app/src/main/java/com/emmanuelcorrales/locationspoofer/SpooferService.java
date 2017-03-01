@@ -15,7 +15,7 @@ import com.emmanuelcorrales.locationspoofer.activities.MainActivity;
 import com.google.android.gms.maps.model.LatLng;
 
 
-public class SpooferService extends Service {
+public class SpooferService extends Service implements Runnable {
 
     public class SpooferBinder extends Binder {
         public SpooferService getService() {
@@ -27,6 +27,7 @@ public class SpooferService extends Service {
 
     private static final String TAG = SpooferService.class.getSimpleName();
     private static final int ID = SpooferService.class.hashCode();
+    private static final int DELAY_TIME = 10000; //10 seconds
 
     private Binder mBinder = new SpooferBinder();
     private LocationSpoofer mSpoofer;
@@ -35,15 +36,12 @@ public class SpooferService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         Log.d(TAG, "onBind");
-        mSpoofer = new LocationSpoofer(this);
-        mSpoofer.initializeGpsSpoofing();
         return mBinder;
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(TAG, "onStartCommand");
-
         if (intent != null) {
             String action = intent.getAction();
             if (action != null && action.equals(ACTION_STOP)) {
@@ -52,22 +50,60 @@ public class SpooferService extends Service {
                 return START_NOT_STICKY;
             }
         }
+        if (mSpoofer == null) {
+            mSpoofer = new LocationSpoofer(this);
+            mSpoofer.initializeGpsSpoofing();
+        }
         return START_STICKY;
     }
 
+    @Override
+    public void onDestroy() {
+        Log.d(TAG, "onDestroy");
+        stopSpoofing();
+        super.onDestroy();
+    }
+
+    @Override
+    public void run() {
+        while (mSpoofer != null) {
+            mSpoofer.mockLocation(mSpoofer.getLatLng());
+            try {
+                Thread.sleep(DELAY_TIME);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+        }
+    }
+
     public LatLng getSpoofedLocation() {
+        if (mSpoofer == null) {
+            return null;
+        }
         return mSpoofer.getLatLng();
     }
 
     public void spoof(LatLng latLng) {
+        if (mSpoofer == null) {
+            return;
+        }
         mSpoofer.mockLocation(latLng);
         startForeground(ID, createNotification());
+        new Thread(this).start();
+    }
+
+    private void stopSpoofing() {
+        if (mSpoofer != null) {
+            mSpoofer.stop();
+            mSpoofer = null;
+        }
     }
 
     private Notification createNotification() {
         NotificationCompat.Style style = new NotificationCompat.InboxStyle()
                 .addLine("Latitude: " + mSpoofer.getLatLng().latitude)
-                .addLine("Longitude: " + mSpoofer.getLatLng().latitude);
+                .addLine("Longitude: " + mSpoofer.getLatLng().longitude);
 
         return new NotificationCompat.Builder(this)
                 .setSmallIcon(R.mipmap.ic_launcher)
