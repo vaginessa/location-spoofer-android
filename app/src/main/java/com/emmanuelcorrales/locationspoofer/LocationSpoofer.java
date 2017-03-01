@@ -2,7 +2,6 @@ package com.emmanuelcorrales.locationspoofer;
 
 import android.app.AppOpsManager;
 import android.content.Context;
-import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
@@ -73,6 +72,12 @@ public class LocationSpoofer {
 
     public LatLng getLatLng() {
         return mLatLang;
+    }
+
+    public void stop() {
+        mLocationManager.clearTestProviderEnabled(LocationManager.GPS_PROVIDER);
+        mLocationManager.clearTestProviderLocation(LocationManager.GPS_PROVIDER);
+        mLocationManager.removeTestProvider(LocationManager.GPS_PROVIDER);
     }
 
     public void mockLocation(LatLng latLng) {
