@@ -2,8 +2,11 @@ package com.emmanuelcorrales.locationspoofer.activities;
 
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -15,6 +18,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
@@ -51,6 +55,16 @@ public class MainActivity extends AnalyticsActivity implements ServiceConnection
     private DialogFragment mMapHintDialog = new MapHintDialogFragment();
     private SpooferService mSpooferService;
 
+    private BroadcastReceiver mReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.d(TAG, "onReceive");
+            if (intent != null && intent.getAction().equals(SpooferService.ACTION_STOP) && mMarker != null) {
+                mMarker.remove();
+            }
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -77,6 +91,8 @@ public class MainActivity extends AnalyticsActivity implements ServiceConnection
         Intent intent = new Intent(this, SpooferService.class);
         startService(intent);
         bindService(intent, this, BIND_AUTO_CREATE);
+        LocalBroadcastManager.getInstance(this)
+                .registerReceiver(mReceiver, new IntentFilter(SpooferService.ACTION_STOP));
     }
 
     @Override
@@ -110,17 +126,9 @@ public class MainActivity extends AnalyticsActivity implements ServiceConnection
 
     @Override
     protected void onStop() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mReceiver);
         unbindService(this);
         super.onStop();
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        if (mMarker == null) {
-            return;
-        }
-        outState.putParcelable(KEY_SATE_MARKER_LATLNG, mMarker.getPosition());
-        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -184,7 +192,7 @@ public class MainActivity extends AnalyticsActivity implements ServiceConnection
 
     @Override
     public void onSpoof(LatLng latLng) {
-        mSpooferService.spoof(latLng);
+        mSpooferService.startSpoofing(latLng);
         moveDefaultMarker(latLng);
 
         CoordinatorLayout coordinatorLayout =

@@ -1,17 +1,16 @@
 package com.emmanuelcorrales.locationspoofer;
 
 import android.app.Notification;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
-import android.support.v4.app.TaskStackBuilder;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 
-import com.emmanuelcorrales.locationspoofer.activities.MainActivity;
+import com.emmanuelcorrales.locationspoofer.utils.IntentUtils;
 import com.google.android.gms.maps.model.LatLng;
 
 
@@ -26,7 +25,7 @@ public class SpooferService extends Service implements Runnable {
     public static final String ACTION_STOP = "stop";
 
     private static final String TAG = SpooferService.class.getSimpleName();
-    private static final int ID = SpooferService.class.hashCode();
+    private static final int NOTIFICATION_ID = SpooferService.class.hashCode();
     private static final int DELAY_TIME = 10000; //10 seconds
 
     private Binder mBinder = new SpooferBinder();
@@ -42,14 +41,10 @@ public class SpooferService extends Service implements Runnable {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(TAG, "onStartCommand");
-        if (intent != null) {
-            String action = intent.getAction();
-            if (action != null && action.equals(ACTION_STOP)) {
-                Log.d(TAG, "Stopping SpooferService.");
-                stopSelf();
-                return START_NOT_STICKY;
-            }
+        if (intent != null && intent.getAction() != null && intent.getAction().equals(ACTION_STOP)) {
+            stopSpoofing();
         }
+
         if (mSpoofer == null) {
             mSpoofer = new LocationSpoofer(this);
             mSpoofer.initializeGpsSpoofing();
@@ -66,14 +61,13 @@ public class SpooferService extends Service implements Runnable {
 
     @Override
     public void run() {
-        while (mSpoofer != null) {
+        while (mSpoofer != null && mSpoofer.getLatLng() != null) {
             mSpoofer.mockLocation(mSpoofer.getLatLng());
             try {
                 Thread.sleep(DELAY_TIME);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-
         }
     }
 
@@ -84,20 +78,24 @@ public class SpooferService extends Service implements Runnable {
         return mSpoofer.getLatLng();
     }
 
-    public void spoof(LatLng latLng) {
+    public void startSpoofing(LatLng latLng) {
         if (mSpoofer == null) {
+            Log.d(TAG, "mSpoofer is null");
             return;
         }
         mSpoofer.mockLocation(latLng);
-        startForeground(ID, createNotification());
+        startForeground(NOTIFICATION_ID, createNotification());
         new Thread(this).start();
     }
 
-    private void stopSpoofing() {
+    public void stopSpoofing() {
+        Log.d(TAG, "stopSpoofing");
         if (mSpoofer != null) {
             mSpoofer.stop();
             mSpoofer = null;
         }
+        stopForeground(true);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(ACTION_STOP));
     }
 
     private Notification createNotification() {
@@ -106,30 +104,16 @@ public class SpooferService extends Service implements Runnable {
                 .addLine("Longitude: " + mSpoofer.getLatLng().longitude);
 
         return new NotificationCompat.Builder(this)
-                .setSmallIcon(R.mipmap.ic_launcher)
+                .setSmallIcon(R.drawable.ic_stat_spoofing)
                 .setContentTitle(getString(R.string.app_name))
                 .setContentText(getString(R.string.notification_content))
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setOngoing(true)
                 .setStyle(style)
-                .setContentIntent(createAppPendingIntent())
+                .setContentIntent(IntentUtils.createAppPendingIntent(this))
                 .addAction(android.R.drawable.ic_lock_power_off,
                         getString(R.string.notification_stop_spoofing),
-                        createStopPendingIntent())
+                        IntentUtils.createStopPendingIntent(this))
                 .build();
-    }
-
-    private PendingIntent createAppPendingIntent() {
-        Intent intent = new Intent(this, MainActivity.class);
-        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-        stackBuilder.addParentStack(MainActivity.class);
-        stackBuilder.addNextIntent(intent);
-        return stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
-    }
-
-    private PendingIntent createStopPendingIntent() {
-        Intent intent = new Intent(this, SpooferService.class);
-        intent.setAction(ACTION_STOP);
-        return PendingIntent.getService(this, 0, intent, 0);
     }
 }
