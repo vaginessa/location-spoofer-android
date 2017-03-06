@@ -262,6 +262,7 @@ public class MainActivity extends AnalyticsActivity implements ServiceConnection
     private void clearMarker() {
         if (mMarker != null) {
             mMarker.remove();
+            mMarker = null;
         }
     }
 }
