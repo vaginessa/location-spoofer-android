@@ -59,8 +59,8 @@ public class MainActivity extends AnalyticsActivity implements ServiceConnection
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.d(TAG, "onReceive");
-            if (intent != null && intent.getAction().equals(SpooferService.ACTION_STOP) && mMarker != null) {
-                mMarker.remove();
+            if (intent != null && intent.getAction().equals(SpooferService.ACTION_STOP)) {
+                clearMarker();
             }
         }
     };
@@ -128,6 +128,7 @@ public class MainActivity extends AnalyticsActivity implements ServiceConnection
     protected void onStop() {
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mReceiver);
         unbindService(this);
+        clearMarker();
         super.onStop();
     }
 
@@ -255,6 +256,12 @@ public class MainActivity extends AnalyticsActivity implements ServiceConnection
                     .draggable(true));
         } else {
             mMarker.setPosition(latLng);
+        }
+    }
+
+    private void clearMarker() {
+        if (mMarker != null) {
+            mMarker.remove();
         }
     }
 }
