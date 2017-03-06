@@ -99,17 +99,12 @@ public class SpooferService extends Service implements Runnable {
     }
 
     private Notification createNotification() {
-        NotificationCompat.Style style = new NotificationCompat.InboxStyle()
-                .addLine("Latitude: " + mSpoofer.getLatLng().latitude)
-                .addLine("Longitude: " + mSpoofer.getLatLng().longitude);
-
         return new NotificationCompat.Builder(this)
                 .setSmallIcon(R.drawable.ic_stat_spoofing)
                 .setContentTitle(getString(R.string.app_name))
                 .setContentText(getString(R.string.notification_content))
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setOngoing(true)
-                .setStyle(style)
                 .setContentIntent(IntentUtils.createAppPendingIntent(this))
                 .addAction(android.R.drawable.ic_lock_power_off,
                         getString(R.string.notification_stop_spoofing),
