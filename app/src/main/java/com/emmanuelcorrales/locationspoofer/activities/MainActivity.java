@@ -234,6 +234,9 @@ public class MainActivity extends AnalyticsActivity implements ServiceConnection
         Log.d(TAG, "onServiceConnected");
         SpooferService.SpooferBinder binder = (SpooferService.SpooferBinder) service;
         mSpooferService = binder.getService();
+        if (mSpooferService != null && mSpooferService.getSpoofedLocation() != null) {
+            mMap.moveCamera(CameraUpdateFactory.newLatLng(mSpooferService.getSpoofedLocation()));
+        }
         restoreMarkerPosition();
     }
 
