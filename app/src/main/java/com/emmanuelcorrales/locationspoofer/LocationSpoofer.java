@@ -80,24 +80,30 @@ public class LocationSpoofer {
         mLocationManager.removeTestProvider(LocationManager.GPS_PROVIDER);
     }
 
-    public void mockLocation(LatLng latLng) {
+    public boolean mockLocation(LatLng latLng) {
         mLatLang = latLng;
-        mockLocation(mLatLang.latitude, mLatLang.longitude);
+        return mockLocation(mLatLang.latitude, mLatLang.longitude);
     }
 
-    private void mockLocation(double latitude, double longitude) {
-        mockLocation(latitude, longitude, DEFAULT_ACCURACY);
+    private boolean mockLocation(double latitude, double longitude) {
+        return mockLocation(latitude, longitude, DEFAULT_ACCURACY);
     }
 
-    private void mockLocation(double latitude, double longitude, float accuracy) {
-        Location nextLocation = new Location(LocationManager.GPS_PROVIDER);
-        nextLocation.setLatitude(latitude);
-        nextLocation.setLongitude(longitude);
-        nextLocation.setAccuracy(accuracy);
-        nextLocation.setTime(System.currentTimeMillis());
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN) {
-            nextLocation.setElapsedRealtimeNanos(SystemClock.elapsedRealtimeNanos());
+    private boolean mockLocation(double latitude, double longitude, float accuracy) {
+        try {
+            Location nextLocation = new Location(LocationManager.GPS_PROVIDER);
+            nextLocation.setLatitude(latitude);
+            nextLocation.setLongitude(longitude);
+            nextLocation.setAccuracy(accuracy);
+            nextLocation.setTime(System.currentTimeMillis());
+            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN) {
+                nextLocation.setElapsedRealtimeNanos(SystemClock.elapsedRealtimeNanos());
+            }
+            mLocationManager.setTestProviderLocation(LocationManager.GPS_PROVIDER, nextLocation);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
         }
-        mLocationManager.setTestProviderLocation(LocationManager.GPS_PROVIDER, nextLocation);
+        return true;
     }
 }

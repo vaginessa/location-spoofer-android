@@ -256,17 +256,18 @@ public class MainActivity extends AnalyticsActivity implements ServiceConnection
 
     @Override
     public void onSpoof(LatLng latLng) {
-        mSpooferService.startSpoofing(latLng);
-        moveDefaultMarker(latLng);
-
+        String msg;
+        if (mSpooferService.startSpoofing(latLng)) {
+            msg = "Spoofed location at " + latLng.latitude + "," + latLng.longitude + ".";
+            moveDefaultMarker(latLng);
+            mMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
+        } else {
+            msg = "Failed to spoof please try again.";
+        }
         CoordinatorLayout coordinatorLayout =
                 (CoordinatorLayout) findViewById(R.id.coordinator_layout);
 
-        Snackbar.make(coordinatorLayout,
-                "Spoofed location at " + latLng.latitude + "," + latLng.longitude + ".",
-                Snackbar.LENGTH_SHORT).show();
-
-        mMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
+        Snackbar.make(coordinatorLayout, msg, Snackbar.LENGTH_SHORT).show();
     }
 
     @Override

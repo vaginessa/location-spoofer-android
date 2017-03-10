@@ -78,14 +78,17 @@ public class SpooferService extends Service implements Runnable {
         return mSpoofer.getLatLng();
     }
 
-    public void startSpoofing(LatLng latLng) {
+    public boolean startSpoofing(LatLng latLng) {
         if (mSpoofer == null) {
             Log.d(TAG, "mSpoofer is null");
-            return;
+            return false;
         }
-        mSpoofer.mockLocation(latLng);
-        startForeground(NOTIFICATION_ID, createNotification());
-        new Thread(this).start();
+        if (mSpoofer.mockLocation(latLng)) {
+            startForeground(NOTIFICATION_ID, createNotification());
+            new Thread(this).start();
+            return true;
+        }
+        return false;
     }
 
     public void stopSpoofing() {
