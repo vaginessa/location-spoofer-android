@@ -25,7 +25,7 @@ public class MockConfigDialogFragment extends DialogFragment
         setCancelable(false);
         int messageId;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            messageId = R.string.enable_location_dialog;
+            messageId = R.string.enable_mock_location_dialog;
         } else {
             messageId = R.string.enable_mock_location_dialog_pre_marshmallow;
         }
