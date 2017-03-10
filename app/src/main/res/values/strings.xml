@@ -17,10 +17,6 @@
     </string>
     <string name="settings">Developer Options</string>
 
-    <string name="enable_location_dialog">This app uses the GPS to mock your location. Your GPS is turned off
-        please turn it on.</string>
-    <string name="location_settings">Location Settings</string>
-
     <string name="map_hint_title">Hint: How to use the map.</string>
     <string name="map_hint">Select your desired location to mock on the map by pressing
         and holding it until a pop-up confirming your selection appears.</string>

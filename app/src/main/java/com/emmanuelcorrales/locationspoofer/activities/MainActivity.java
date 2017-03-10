@@ -29,7 +29,6 @@ import com.emmanuelcorrales.android.utils.LocationUtils;
 import com.emmanuelcorrales.locationspoofer.LocationSpoofer;
 import com.emmanuelcorrales.locationspoofer.R;
 import com.emmanuelcorrales.locationspoofer.SpooferService;
-import com.emmanuelcorrales.locationspoofer.fragments.dialogs.LocationConfigDialogFragment;
 import com.emmanuelcorrales.locationspoofer.fragments.dialogs.MapHintDialogFragment;
 import com.emmanuelcorrales.locationspoofer.fragments.dialogs.MockConfigDialogFragment;
 import com.emmanuelcorrales.locationspoofer.fragments.dialogs.SpoofDialogFragment;
@@ -64,7 +63,6 @@ public class MainActivity extends AnalyticsActivity implements ServiceConnection
     private GoogleMap mMap;
     private Marker mMarker;
     private DialogFragment mMockConfigDialog = new MockConfigDialogFragment();
-    private DialogFragment mLocationConfigDialog = new LocationConfigDialogFragment();
     private DialogFragment mMapHintDialog = new MapHintDialogFragment();
     private SpooferService mSpooferService;
     private GoogleApiClient mGoogleApiClient;
@@ -136,10 +134,6 @@ public class MainActivity extends AnalyticsActivity implements ServiceConnection
     protected void onPause() {
         if (mMockConfigDialog.isAdded()) {
             mMockConfigDialog.dismiss();
-        }
-
-        if (mLocationConfigDialog.isAdded()) {
-            mLocationConfigDialog.dismiss();
         }
 
         if (mMapHintDialog.isAdded()) {
