@@ -60,7 +60,6 @@ public class MainActivity extends AnalyticsActivity implements ServiceConnection
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final int REQUEST_PERMISSION_LOCATION = 7676;
     private static final int REQUEST_CHECK_LOCATION_SETTINGS = 43438;
-    private static final String KEY_SATE_MARKER_LATLNG = "key_state_marker_latlng";
 
     private GoogleMap mMap;
     private Marker mMarker;
