@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="enable_mock_location_dialog">This app requires the permission to mock location.
+    Please enable mock location on Developer Options by going to
+        <b>Settings</b> > <b>Developer Options</b> > <b>Select mock location app</b>.
+    </string>
+</resources>

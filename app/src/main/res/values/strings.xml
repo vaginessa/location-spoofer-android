@@ -6,15 +6,11 @@
     <string name="latitude">Latitude</string>
     <string name="longitude">Longitude</string>
 
-    <string name="enable_mock_location_dialog_pre_marshmallow">This app requires the permission to mock location.
+    <string name="enable_mock_location_dialog">This app requires the permission to mock location.
     Please enable mock location on Developer Options by going to
     Please enable mock location by going to <b>Settings</b> > <b>Developer Options</b> > <b>Allow mock locations</b>.
     </string>
 
-    <string name="enable_mock_location_dialog">This app requires the permission to mock location.
-    Please enable mock location on Developer Options by going to
-        <b>Settings</b> > <b>Developer Options</b> > <b>Select mock location app</b>.
-    </string>
     <string name="settings">Developer Options</string>
 
     <string name="map_hint_title">Hint: How to use the map.</string>
