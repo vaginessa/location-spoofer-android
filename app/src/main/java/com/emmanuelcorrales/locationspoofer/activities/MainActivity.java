@@ -2,87 +2,107 @@ package com.emmanuelcorrales.locationspoofer.activities;
 
 
 import android.Manifest;
-import android.content.DialogInterface;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.annotation.NonNull;
-import android.support.design.widget.TabLayout;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
-import android.support.v4.app.Fragment;
-import android.support.v4.view.ViewPager;
-import android.support.v7.app.AlertDialog;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 
-import com.emmanuelcorrales.android.utils.KeyboardUtils;
 import com.emmanuelcorrales.android.utils.LocationUtils;
-import com.emmanuelcorrales.android.utils.ViewPagerUtils;
+import com.emmanuelcorrales.locationspoofer.LocationSpoofer;
 import com.emmanuelcorrales.locationspoofer.R;
-import com.emmanuelcorrales.locationspoofer.adapters.ViewPagerAdapter;
-import com.emmanuelcorrales.locationspoofer.fragments.FormFragment;
+import com.emmanuelcorrales.locationspoofer.SpooferService;
 import com.emmanuelcorrales.locationspoofer.fragments.dialogs.LocationConfigDialogFragment;
 import com.emmanuelcorrales.locationspoofer.fragments.dialogs.MapHintDialogFragment;
 import com.emmanuelcorrales.locationspoofer.fragments.dialogs.MockConfigDialogFragment;
+import com.emmanuelcorrales.locationspoofer.fragments.dialogs.SpoofDialogFragment;
 import com.emmanuelcorrales.locationspoofer.utils.ConfigUtils;
-import com.emmanuelcorrales.locationspoofer.LocationSpoofer;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 
-public class MainActivity extends AnalyticsActivity implements OnMapReadyCallback,
-        GoogleMap.OnMapLongClickListener, ViewPager.OnPageChangeListener {
+public class MainActivity extends AnalyticsActivity implements ServiceConnection, OnMapReadyCallback,
+        GoogleMap.OnMapLongClickListener, View.OnClickListener, GoogleMap.OnMarkerDragListener,
+        SpoofDialogFragment.OnSpoofListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final int REQUEST_PERMISSION_LOCATION = 7676;
-    private static final int INDEX_MAP = 0;
-    private static final int INDEX_FORM = 1;
 
     private GoogleMap mMap;
+    private Marker mMarker;
     private DialogFragment mMockConfigDialog = new MockConfigDialogFragment();
     private DialogFragment mLocationConfigDialog = new LocationConfigDialogFragment();
     private DialogFragment mMapHintDialog = new MapHintDialogFragment();
-    private LocationSpoofer mSpoofer;
+    private SpooferService mSpooferService;
+
+    private BroadcastReceiver mReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.d(TAG, "onReceive");
+            if (intent != null && intent.getAction().equals(SpooferService.ACTION_STOP)) {
+                clearMarker();
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mSpoofer = new LocationSpoofer(this);
-
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        ViewPager viewPager = (ViewPager) findViewById(R.id.viewpager);
-        SupportMapFragment mapFragment = getMapFragment();
-        FormFragment formFragment = getFormFragment();
-        Fragment[] fragments = {mapFragment, formFragment};
-        viewPager.setAdapter(new ViewPagerAdapter(getSupportFragmentManager(), fragments));
-        viewPager.addOnPageChangeListener(this);
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        if (fab != null) {
+            fab.setOnClickListener(this);
+        }
 
-        TabLayout tabs = (TabLayout) findViewById(R.id.tabs);
-        tabs.setupWithViewPager(viewPager);
+        SupportMapFragment mapFragment =
+                (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map_fragment);
+        if (mapFragment != null) {
+            mapFragment.getMapAsync(this);
+        }
+    }
 
-        mapFragment.getMapAsync(this);
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Intent intent = new Intent(this, SpooferService.class);
+        startService(intent);
+        bindService(intent, this, BIND_AUTO_CREATE);
+        LocalBroadcastManager.getInstance(this)
+                .registerReceiver(mReceiver, new IntentFilter(SpooferService.ACTION_STOP));
     }
 
     @Override
     protected void onResumeFragments() {
         super.onResumeFragments();
-        if (!mSpoofer.canMockLocation()) {
+        if (!LocationSpoofer.canMockLocation(this)) {
             mMockConfigDialog.show(getSupportFragmentManager(), MockConfigDialogFragment.TAG);
         } else if (!LocationUtils.isGpnOn(this) && !mLocationConfigDialog.isAdded()) {
             mLocationConfigDialog.show(getSupportFragmentManager(), LocationConfigDialogFragment.TAG);
-        } else {
-            mSpoofer.initializeGpsSpoofing();
-            ViewPager viewPager = (ViewPager) findViewById(R.id.viewpager);
-            if (viewPager.getCurrentItem() == INDEX_MAP && ConfigUtils.isMapHintVisible(this)) {
-                mMapHintDialog.show(getSupportFragmentManager(), MapHintDialogFragment.TAG);
-            }
+        } else if (ConfigUtils.isMapHintVisible(this)) {
+            mMapHintDialog.show(getSupportFragmentManager(), MapHintDialogFragment.TAG);
         }
     }
 
@@ -101,6 +121,14 @@ public class MainActivity extends AnalyticsActivity implements OnMapReadyCallbac
         }
 
         super.onPause();
+    }
+
+    @Override
+    protected void onStop() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mReceiver);
+        unbindService(this);
+        clearMarker();
+        super.onStop();
     }
 
     @Override
@@ -127,7 +155,9 @@ public class MainActivity extends AnalyticsActivity implements OnMapReadyCallbac
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        mMap.getUiSettings().setMapToolbarEnabled(false);
         mMap.setOnMapLongClickListener(this);
+        mMap.setOnMarkerDragListener(this);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                     == PackageManager.PERMISSION_GRANTED) {
@@ -140,64 +170,102 @@ public class MainActivity extends AnalyticsActivity implements OnMapReadyCallbac
         } else {
             mMap.setMyLocationEnabled(true);
         }
+        restoreMarkerPosition();
     }
-
 
     @Override
     public void onMapLongClick(final LatLng latLng) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage(R.string.dialog_mock_location)
-                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        mSpoofer.mockLocation(latLng.latitude, latLng.longitude);
-                    }
-                }).setNegativeButton(android.R.string.no, null).show();
+        DialogFragment dialogFragment = SpoofDialogFragment.newInstance(this, latLng);
+        dialogFragment.show(getSupportFragmentManager(), SpoofDialogFragment.TAG);
     }
 
     @Override
-    public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-
-    }
-
-    @Override
-    public void onPageSelected(int position) {
-        if (position == INDEX_MAP) {
-            View view = findViewById(android.R.id.content);
-            KeyboardUtils.hideKeyboard(this, view);
-
-            getFormFragment().clearErrors();
-
-            if (ConfigUtils.isMapHintVisible(this)) {
-                mMapHintDialog.show(getSupportFragmentManager(), MapHintDialogFragment.TAG);
-            }
-        }
-    }
-
-    @Override
-    public void onPageScrollStateChanged(int state) {
-
-    }
-
-    private SupportMapFragment getMapFragment() {
-        SupportMapFragment mapFragment = (SupportMapFragment)
-                ViewPagerUtils.getViewPagerFragment(R.id.viewpager, getSupportFragmentManager(), 0);
-
-        if (mapFragment == null) {
-            mapFragment = new SupportMapFragment();
-        }
-        return mapFragment;
-    }
-
-    private FormFragment getFormFragment() {
-        FormFragment formFragment = (FormFragment)
-                ViewPagerUtils.getViewPagerFragment(R.id.viewpager, getSupportFragmentManager(), 1);
-
-        if (formFragment == null) {
-            formFragment = FormFragment.newInstance(mSpoofer);
+    public void onClick(View v) {
+        DialogFragment dialogFragment;
+        if (mMarker == null) {
+            dialogFragment = SpoofDialogFragment.newInstance(this);
         } else {
-            formFragment.setSpoofer(mSpoofer);
+            dialogFragment = SpoofDialogFragment.newInstance(this, mMarker.getPosition());
         }
-        return formFragment;
+        dialogFragment.show(getSupportFragmentManager(), SpoofDialogFragment.TAG);
+    }
+
+    @Override
+    public void onSpoof(LatLng latLng) {
+        String msg;
+        if (mSpooferService.startSpoofing(latLng)) {
+            msg = "Spoofed location at " + latLng.latitude + "," + latLng.longitude + ".";
+            moveDefaultMarker(latLng);
+            mMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
+        } else {
+            msg = "Failed to spoof please try again.";
+        }
+        CoordinatorLayout coordinatorLayout =
+                (CoordinatorLayout) findViewById(R.id.coordinator_layout);
+
+        Snackbar.make(coordinatorLayout, msg, Snackbar.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onSpoofCancel() {
+        restoreMarkerPosition();
+    }
+
+
+    @Override
+    public void onMarkerDragStart(Marker marker) {
+        //Don't use marker.getPosition()
+        //The marker shifts up by some distance when I start dragging.
+    }
+
+    @Override
+    public void onMarkerDrag(Marker marker) {
+
+    }
+
+    @Override
+    public void onMarkerDragEnd(Marker marker) {
+        DialogFragment dialogFragment = SpoofDialogFragment.newInstance(this, marker.getPosition());
+        dialogFragment.show(getSupportFragmentManager(), SpoofDialogFragment.TAG);
+    }
+
+    @Override
+    public void onServiceConnected(ComponentName name, IBinder service) {
+        Log.d(TAG, "onServiceConnected");
+        SpooferService.SpooferBinder binder = (SpooferService.SpooferBinder) service;
+        mSpooferService = binder.getService();
+        if (mSpooferService != null && mSpooferService.getSpoofedLocation() != null) {
+            mMap.moveCamera(CameraUpdateFactory.newLatLng(mSpooferService.getSpoofedLocation()));
+        }
+        restoreMarkerPosition();
+    }
+
+    @Override
+    public void onServiceDisconnected(ComponentName name) {
+        Log.d(TAG, "onServiceDisconnected");
+        mSpooferService = null;
+    }
+
+    private void restoreMarkerPosition() {
+        if (mSpooferService != null && mSpooferService.getSpoofedLocation() != null) {
+            moveDefaultMarker(mSpooferService.getSpoofedLocation());
+        }
+    }
+
+    private void moveDefaultMarker(LatLng latLng) {
+        if (mMarker == null) {
+            mMarker = mMap.addMarker(new MarkerOptions()
+                    .position(latLng)
+                    .draggable(true));
+        } else {
+            mMarker.setPosition(latLng);
+        }
+    }
+
+    private void clearMarker() {
+        if (mMarker != null) {
+            mMarker.remove();
+            mMarker = null;
+        }
     }
 }

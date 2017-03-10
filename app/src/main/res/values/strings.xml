@@ -1,34 +1,30 @@
 <resources>
     <string name="app_name">Location Spoofer</string>
 
-    <!--fragment_form.xml-->
-    <string name="latitude">Latitude:</string>
-    <string name="longitude">Longitude:</string>
-    <string name="spoof">Spoof</string>
-    <string name="validation_required">Required!</string>
-
-    <!--activity_maps.xml-->
-    <string name="title_activity_maps">Location Spoofer</string>
-    <string name="dialog_mock_location">Set your location here?</string>
-
-    <string name="enable_mock_location_dialog_pre_marshmallow">This app requires the permission to mock location.
-    Please enable mock location on Developer Options by going to
-    Please enable mock location by going to <b>Settings</b> > <b>Developer Options</b> > <b>Allow mock locations</b>.
-    </string>
-
-    <string name="enable_mock_location_dialog">This app requires the permission to mock location.
-    Please enable mock location on Developer Options by going to
-        <b>Settings</b> > <b>Developer Options</b> > <b>Select mock location app</b>.
-    </string>
-
-    <string name="settings">Developer Options</string>
+    <!--dialog_spoof.xml-->
+    <string name="dialog_mock_location">Spoof your location here?</string>
+    <string name="latitude">Latitude</string>
+    <string name="longitude">Longitude</string>
 
     <string name="enable_location_dialog">This app uses the GPS to mock your location. Your GPS is turned off
         please turn it on.</string>
     <string name="location_settings">Location Settings</string>
 
+    <string name="enable_mock_location_dialog">This app requires the permission to mock location.
+    Please enable mock location on Developer Options by going to
+    Please enable mock location by going to <b>Settings</b> > <b>Developer Options</b> > <b>Allow mock locations</b>.
+    </string>
+
+    <string name="settings">Developer Options</string>
+
     <string name="map_hint_title">Hint: How to use the map.</string>
     <string name="map_hint">Select your desired location to mock on the map by pressing
         and holding it until a pop-up confirming your selection appears.</string>
+
+    <!--dialog_checkbox.xml-->
     <string name="do_not_show_again">Do not show this again.</string>
+
+    <!--notification-->
+    <string name="notification_content">Your device is using a fake location.</string>
+    <string name="notification_stop_spoofing">Stop spoofing.</string>
 </resources>

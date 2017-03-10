@@ -2,20 +2,45 @@ package com.emmanuelcorrales.locationspoofer;
 
 import android.app.AppOpsManager;
 import android.content.Context;
-import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.SystemClock;
 import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.util.Log;
+
+import com.google.android.gms.maps.model.LatLng;
 
 public class LocationSpoofer {
     private static final String TAG = LocationSpoofer.class.getSimpleName();
-    private static final int DEFAULT_ACCURACY = 5;
+    private static final int DEFAULT_ACCURACY = 1;
+
+    /**
+     * Check if mock location is enabled on developer options.
+     *
+     * @return true if mock location is enabled else it returns false.
+     */
+    public static boolean canMockLocation(@NonNull Context context) {
+        boolean isEnabled = false;
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                AppOpsManager opsManager = (AppOpsManager) context.getSystemService(Context.APP_OPS_SERVICE);
+                isEnabled = opsManager.checkOp(AppOpsManager.OPSTR_MOCK_LOCATION, android.os.Process.myUid(),
+                        BuildConfig.APPLICATION_ID) == AppOpsManager.MODE_ALLOWED;
+            } else {
+                return !Settings.Secure.getString(context.getContentResolver(),
+                        Settings.Secure.ALLOW_MOCK_LOCATION).equals("0");
+            }
+        } catch (Exception e) {
+            Log.d(TAG, "Mock location is not enabled.");
+        }
+        return isEnabled;
+    }
 
     private Context mContext;
     private LocationManager mLocationManager;
+    private LatLng mLatLang;
 
     public LocationSpoofer(Context context) {
         if (context == null) {
@@ -25,30 +50,8 @@ public class LocationSpoofer {
         mLocationManager = (LocationManager) mContext.getSystemService(Context.LOCATION_SERVICE);
     }
 
-    /**
-     * Check if mock location is enabled on developer options.
-     *
-     * @return true if mock location is enabled else it returns false.
-     */
-    public boolean canMockLocation() {
-        boolean isEnabled = false;
-        try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                AppOpsManager opsManager = (AppOpsManager) mContext.getSystemService(Context.APP_OPS_SERVICE);
-                isEnabled = opsManager.checkOp(AppOpsManager.OPSTR_MOCK_LOCATION, android.os.Process.myUid(),
-                        BuildConfig.APPLICATION_ID) == AppOpsManager.MODE_ALLOWED;
-            } else {
-                return !Settings.Secure.getString(mContext.getContentResolver(),
-                        Settings.Secure.ALLOW_MOCK_LOCATION).equals("0");
-            }
-        } catch (Exception e) {
-            Log.d(TAG, "Mock location is not enabled.");
-        }
-        return isEnabled;
-    }
-
     public void initializeGpsSpoofing() {
-        if (!canMockLocation()) {
+        if (!canMockLocation(mContext)) {
             Log.e(TAG, "Cannot initialize GPS spoofing. Mock location is not enabled on Developer options.");
             return;
         }
@@ -67,29 +70,40 @@ public class LocationSpoofer {
         mLocationManager.setTestProviderEnabled(LocationManager.GPS_PROVIDER, true);
     }
 
-    public void mockLocation(double latitude, double longitude) {
-        mockLocation(latitude, longitude, DEFAULT_ACCURACY);
+    public LatLng getLatLng() {
+        return mLatLang;
     }
 
-    public void mockLocation(double latitude, double longitude, float accuracy) {
-        Location nextLocation = new Location(LocationManager.GPS_PROVIDER);
-        nextLocation.setLatitude(latitude);
-        nextLocation.setLongitude(longitude);
-        nextLocation.setAccuracy(accuracy);
-        nextLocation.setTime(System.currentTimeMillis());
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN) {
-            nextLocation.setElapsedRealtimeNanos(SystemClock.elapsedRealtimeNanos());
-        }
-        mLocationManager.setTestProviderLocation(LocationManager.GPS_PROVIDER, nextLocation);
+    public void stop() {
+        mLocationManager.clearTestProviderEnabled(LocationManager.GPS_PROVIDER);
+        mLocationManager.clearTestProviderLocation(LocationManager.GPS_PROVIDER);
+        mLocationManager.removeTestProvider(LocationManager.GPS_PROVIDER);
     }
 
-    private String getBestProvider() {
-        Criteria criteria = new Criteria();
-        criteria.setAccuracy(Criteria.ACCURACY_FINE);
-        String provider = mLocationManager.getBestProvider(criteria, false);
-        if (provider == null) {
-            Log.e(TAG, "No location provider found!");
+    public boolean mockLocation(LatLng latLng) {
+        mLatLang = latLng;
+        return mockLocation(mLatLang.latitude, mLatLang.longitude);
+    }
+
+    private boolean mockLocation(double latitude, double longitude) {
+        return mockLocation(latitude, longitude, DEFAULT_ACCURACY);
+    }
+
+    private boolean mockLocation(double latitude, double longitude, float accuracy) {
+        try {
+            Location nextLocation = new Location(LocationManager.GPS_PROVIDER);
+            nextLocation.setLatitude(latitude);
+            nextLocation.setLongitude(longitude);
+            nextLocation.setAccuracy(accuracy);
+            nextLocation.setTime(System.currentTimeMillis());
+            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN) {
+                nextLocation.setElapsedRealtimeNanos(SystemClock.elapsedRealtimeNanos());
+            }
+            mLocationManager.setTestProviderLocation(LocationManager.GPS_PROVIDER, nextLocation);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
         }
-        return provider;
+        return true;
     }
 }
